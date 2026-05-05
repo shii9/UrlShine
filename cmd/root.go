@@ -152,72 +152,68 @@ func normalizeFlags() {
 func init() {
 	rootCmd.SetHelpFunc(func(cmd *cobra.Command, args []string) {
 		fmt.Printf(`
-URLShine v%s
-Professional URL Enumeration and Attack Surface Mapper
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                        URLShine v%s                                          ║
+║          Professional URL Enumeration & Attack Surface Mapper                ║
+╚══════════════════════════════════════════════════════════════════════════════╝
 
 USAGE
   urlshine [target ...] [flags]
 
-✅ FLEXIBLE FLAG FORMAT
-  You can use ANY of these formats (all work the same):
-  
-  Long flags (double dash):
-    urlshine --all --complete google.com
-    
-  Short flags (single dash with letter):
-    urlshine -a -c google.com
-    
-  Long flags (single dash):
-    urlshine -all -complete google.com
-    
-  Mixed formats:
-    urlshine -a --complete google.com
-    urlshine --gau -katana -c google.com
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-FLAGS EXPLAINED
-  --all, -a, -all         Use all 9 tools (GAU, Katana, GoSpider, Waymore, Waybackurls, 
-                          Hakrawler, xnLinkFinder, Gobuster, Dirb)
-  --complete, -c, -complete  Complete all processing steps:
-                            • Merging — Deduplicates all results
-                            • Normalization — Cleans URLs
-                            • Categorization — Splits into 5 attack groups
-                            • Alive Checking — Verifies live hosts (unless --no-alive or -no-alive)
+📌 QUICK EXAMPLES
 
-COLLECTION TOOLS (use any format)
-  --gau, -g, -gau              GetAllUrls - archive & passive sources
-  --katana, -k, -katana        Katana - active JS crawler
-  --gospider, -w, -gospider    GoSpider - HTML & JS crawler
-  --waymore, -m, -waymore      Waymore - advanced wayback scraper
-  --waybackurls, -b, -waybackurls  Wayback URLs - wayback machine scraper
-  --hakrawler, -r, -hakrawler  Hakrawler - HTML content crawler
-  --xnlinkfinder, -x, -xnlinkfinder  xnLinkFinder - JS endpoint extractor
-  --gobuster, -u, -gobuster    Gobuster - directory brute-force discovery
-  --dirb, -i, -dirb            Dirb - directory enumeration
+  Collect URLs only:
+    $ urlshine -all google.com
+    $ urlshine -a google.com
+    $ urlshine -gau -katana google.com
 
-EXAMPLES
-  All of these work:
-    urlshine -all -complete google.com
-    urlshine --all --complete google.com
-    urlshine -a -c google.com
-    urlshine -gau -katana google.com
-    urlshine --gau --katana google.com
-    urlshine -g -k google.com
-    urlshine -f targets.txt -a -c -t 100 google.com
-    urlshine --file targets.txt --all --complete --threads 100 google.com
+  Full processing pipeline:
+    $ urlshine -all -complete google.com
+    $ urlshine -a -c google.com
+    $ urlshine -f targets.txt -a -c -t 150 -d 3
 
-OPTIONS
-  -t, --threads, -threads      Parallel threads for tools and probing (default: 50)
-  -d, --depth, -depth          Crawl depth for active tools (default: 5)
-  -o, --output, -output        Output directory (default: urlshine_<timestamp>)
-  -f, --file, -file            Input file with targets (one per line)
-  -s, --subs, -subs            Include subdomains when supported (default: true)
-  -v, --verbose, -verbose      Debug/verbose logging
-  --no-alive, -no-alive        Skip live host verification
-  --skip-collect, -skip-collect   Skip collection and process existing files
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-OUTPUT STRUCTURE
-  Without --complete or -complete or -c:
-    {domain}_url/
+🎯 MAIN FLAGS
+
+  -all, -a, --all           Run all 9 collection tools
+  -complete, -c, --complete Full pipeline: merge, normalize, categorize, alive-check
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 COLLECTION TOOLS (choose one or more)
+
+  -gau, -g                  GetAllUrls (archive & passive sources)
+  -katana, -k               Katana (active JS crawler)
+  -gospider, -w             GoSpider (HTML & JS crawler)
+  -waymore, -m              Waymore (advanced wayback scraper)
+  -waybackurls, -b          Wayback URLs (wayback machine scraper)
+  -hakrawler, -r            Hakrawler (HTML content crawler)
+  -xnlinkfinder, -x         xnLinkFinder (JS endpoint extractor)
+  -gobuster, -u             Gobuster (directory brute-force)
+  -dirb, -i                 Dirb (directory enumeration)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚙️  OPTIONS
+
+  -t, --threads INT         Parallel threads (default: 50, recommended: 50-200)
+  -d, --depth INT           Crawl depth for active tools (default: 5)
+  -o, --output DIR          Output directory (default: urlshine_<timestamp>)
+  -f, --file FILE           Input file with targets (one per line)
+  -s, --subs                Include subdomains when supported (default: true)
+  -v, --verbose             Debug/verbose logging
+  --no-alive                Skip live host verification
+  --skip-collect            Skip collection, reprocess existing data
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📂 OUTPUT STRUCTURE
+
+  Collection only (without -complete):
+    domain_url/
     ├── gau.txt
     ├── katana.txt
     ├── gospider.txt
@@ -228,20 +224,32 @@ OUTPUT STRUCTURE
     ├── gobuster.txt
     └── dirb.txt
 
-  With --complete or -complete or -c:
-    {domain}_url/
+  Full processing (with -complete):
+    domain_url/
     ├── merged_urls.txt (all tools combined)
     ├── normalized_urls.txt (cleaned & deduplicated)
-    ├── api_endpoints.txt (API paths)
+    ├── api_endpoints.txt (API paths found)
     ├── auth_admin_urls.txt (authentication pages)
-    ├── parameters.txt (URLs with parameters)
+    ├── parameters.txt (URLs with query parameters)
     ├── js_config.txt (JavaScript & config files)
     ├── directories.txt (directory paths)
     ├── alive_urls.txt (verified live hosts)
     ├── report.json
     └── report.html
 
-ALL FLAGS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 TIPS
+
+  • You can use ANY flag format: -all, --all, -a (all work the same)
+  • Use -complete to enable merging, normalization, categorization, and alive-check
+  • Use -f to process multiple targets from a file
+  • Default is 50 threads; increase with -t for faster execution
+  • Add -v for verbose output to see what's happening
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ALL FLAGS (from Cobra)
 `, version)
 		cmd.Flags().PrintDefaults()
 		fmt.Println("")
