@@ -22,27 +22,49 @@ Optimized for large-scale reconnaissance on massive subdomain lists. Essential f
 
 ## 📥 Installation
 
+**One-liner Installation:**
 ```bash
-git clone https://github.com/sh19/URLShine.git && cd URLShine && go build -o urlshine .
+git clone https://github.com/shii9/UrlShine.git && cd UrlShine && go build -o urlshine . && sudo mv urlshine /usr/local/bin/
 ```
 
-**Quick Setup:**
+**Step-by-step Setup:**
 ```bash
-# Clone and build
-git clone https://github.com/sh19/URLShine.git
-cd URLShine
+# Clone repository
+git clone https://github.com/shii9/UrlShine.git
+cd UrlShine
+
+# Build binary
 go build -o urlshine .
 
-# Verify installation
-./urlshine --help
-
-# Optional: Install globally
+# Linux/macOS: Install globally (one-time setup)
 sudo mv urlshine /usr/local/bin/
+chmod +x /usr/local/bin/urlshine
+
+# Verify installation
+urlshine --help
+```
+
+**Windows Setup:**
+```powershell
+# Clone repository
+git clone https://github.com/shii9/UrlShine.git
+cd UrlShine
+
+# Build binary
+go build -o urlshine.exe .
+
+# Option 1: Use directly from directory
+.\urlshine.exe --help
+
+# Option 2: Add to PATH (Recommended)
+# 1. Copy urlshine.exe to a folder (e.g., C:\Tools\)
+# 2. Add C:\Tools\ to Windows PATH environment variable
+# 3. Then use: urlshine --help
 ```
 
 **Requirements:**
 - Go 1.21+ ([Install Go](https://golang.org/dl/))
-- Any of the optional tools listed below for enhanced URL collection
+- Recommended: Add to PATH for global access (no `./` prefix needed)
 
 **Optional URL Collection Tools** (install for maximum effectiveness):
 - [GAU](https://github.com/lc/gau) — GetAllUrls
@@ -59,20 +81,29 @@ sudo mv urlshine /usr/local/bin/
 ## 🚀 Quick Start
 
 ```bash
-# Basic scan (Single domain, runs all 9 URL tools with aggressive settings)
+# Enumerate single domain (auto-runs all 9 tools + gobuster + dirb)
 urlshine google.com
 
-# Process large subdomain list - MAXIMUM URL EXTRACTION
-urlshine -f massive-subdomain-list.txt --all -t 100 -d 5
+# Specific tools only
+urlshine -gau -katana google.com
 
-# Aggressive parallel collection from multiple domains
-urlshine google.com yahoo.com facebook.com --all -t 100
+# All tools with aggressive settings
+urlshine -all -t 100 -d 5 google.com
 
-# Fast mode for quick collection (Skip alive checking)
-urlshine -f targets.txt --all --no-alive
+# Process file with multiple targets
+urlshine -f targets.txt -all -t 150 -d 3
 
-# Professional reporting with deep crawling
-urlshine -f domains.txt -o ./professional_report -t 100 -d 5 --all
+# Combine specific tools with -all for additional discovery
+urlshine -gau -katana -all -t 100 -v google.com
+
+# Fast mode (skip alive checking)
+urlshine -all -no-alive google.com
+
+# Professional output with custom directory
+urlshine -all -t 100 -d 5 -o ./reports google.com
+
+# Verbose mode for debugging
+urlshine -all -v google.com
 ```
 
 ## ✨ Features
@@ -109,38 +140,125 @@ When using the `--all` flag, URLShine executes a comprehensive 5-step reconnaiss
 5. **Alive Checking**: Probes all URLs to filter dead links (httpx or native Go fallback)
 6. **Reporting**: Generates professional Markdown and JSON reports
 
-## 💻 CLI Options
+## 💻 CLI Options & Commands
 
-```text
-USAGE:
-  urlshine [target ...] [flags]
+### Flag Reference
 
-TARGET FLAGS:
-  -f, --file string      File containing target domains (one per line)
-  -o, --output string    Custom output directory (default: urlshine_<time>)
+**Target Input:**
+```
+  <domain>               Single domain (example: urlshine google.com)
+  -f, --file FILE        File with targets, one per line
+```
 
-PIPELINE CONTROL:  --gobuster             Run Gobuster for directory discovery
-  --dirb                 Run Dirb for directory brute-forcing  -all                   Run all available URL tools and full post-processing pipeline
-  --no-alive             Skip httpx alive checking phase (fast mode)
-  --skip-collect         Skip collection, re-process existing 'raw/' folder
+**URL Collection Tools** (run individually or combine):
+```
+  -gau                   GAU (GetAllUrls) - archive & passive sources
+  -katana                Katana - active JS crawler
+  -gospider              GoSpider - HTML & JS crawler
+  -waymore               Waymore - advanced wayback scraper
+  -waybackurls           Wayback URLs - wayback machine scraper
+  -hakrawler             Hakrawler - HTML content crawler
+  -xnlinkfinder          xnLinkFinder - JS endpoint extractor
+  -gobuster              Gobuster - directory brute-force discovery
+  -dirb                  Dirb - directory enumeration
+  -all                   Run ALL 9 tools + gobuster + dirb automatically
+```
 
-URL TOOLS:
-  --gau                  Run GAU (GetAllUrls)
-  --gospider             Run GoSpider
-  --katana               Run Katana
-  --waymore              Run Waymore
-  --waybackurls          Run Waybackurls
-  --hakrawler            Run Hakrawler
-  --xnlinkfinder         Run xnLinkFinder
+**Configuration Options:**
+```
+  -t, --threads INT      Parallel threads (default: 50, recommended: 50-200)
+  -d, --depth INT        Crawl depth for active tools (default: 5)
+  -o, --output DIR       Output directory (default: urlshine_<timestamp>)
+  -f, --file FILE        Input file with targets
+```
 
-PERFORMANCE:
-  -t, --threads int      Concurrency for collectors & alive checks (default: 50, recommended: 50-200)
-  -d, --depth int        Crawl depth for active tools (default: 5, higher = more thorough)
-  -s, --subs             Include subdomains (default: true)
+**Processing & Control:**
+```
+  -no-alive              Skip live host verification (fast mode)
+  -skip-collect          Reprocess existing data (skip collection)
+  -v, --verbose          Debug/verbose logging output
+  -h, --help             Display help menu
+```
 
-SYSTEM:
-  -v, --verbose          Enable debug/verbose logging
-  -h, --help             Display this help menu
+### Command Examples
+
+**Basic Usage:**
+```bash
+# Single domain - auto-runs all 9 tools
+urlshine google.com
+
+# Multiple domains
+urlshine google.com yahoo.com facebook.com
+
+# Show help
+urlshine --help
+```
+
+**Selective Tool Usage:**
+```bash
+# Specific tools only
+urlshine -gau -katana google.com
+
+# Add directory discovery
+urlshine -katana -gobuster -dirb google.com
+
+# Combine multiple sources
+urlshine -gau -katana -gospider -t 50 google.com
+```
+
+**Professional Reconnaissance:**
+```bash
+# All tools with aggressive settings (includes gobuster + dirb by default)
+urlshine -all -t 100 -d 5 google.com
+
+# Large batch processing
+urlshine -f targets.txt -all -t 150 -d 2 -o ./results
+
+# Fast mode without alive checking
+urlshine -all -no-alive -t 100 google.com
+
+# Verbose output for debugging
+urlshine -all -t 100 -v google.com
+```
+
+**Advanced Scenarios:**
+```bash
+# Combine -all with individual tools (tools won't duplicate)
+urlshine -all -gau -t 100 google.com
+
+# All tools + full verbosity + custom output
+urlshine -all -t 100 -d 5 -o ./enterprise_scan -v google.com
+
+# Reprocess existing results with different settings
+urlshine -skip-collect -no-alive google.com
+
+# Batch with deep crawling and custom threads
+urlshine -f massive-targets.txt -all -t 150 -d 3 -o ./batch_results -v
+```
+
+### About the `-all` Flag
+
+When you use `-all`, URLShine automatically:
+- ✅ Runs all 9 URL collection tools (GAU, Katana, GoSpider, Waymore, Waybackurls, Hakrawler, xnLinkFinder)
+- ✅ Includes Gobuster for aggressive directory discovery
+- ✅ Includes Dirb for directory brute-forcing
+- ✅ Performs full URL normalization and deduplication
+- ✅ Advanced extraction for API endpoints, Auth pages, Parameters, JS/Config, Directories
+- ✅ Optional: Live host verification (disable with `-no-alive`)
+
+**Example with combinations:**
+```bash
+# All tools are already in -all, this runs the same as 'urlshine -all google.com'
+urlshine -all google.com
+
+# Add extra verbosity
+urlshine -all -v google.com
+
+# Increase threads and depth
+urlshine -all -t 150 -d 5 google.com
+
+# Fast mode with all tools
+urlshine -all -no-alive -t 100 google.com
 ```
 
 ## ⚙️ Requirements
