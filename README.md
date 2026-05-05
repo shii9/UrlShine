@@ -19,46 +19,37 @@
 
 **Requirements:**
 - Go 1.21+ ([Install Go](https://golang.org/dl/))
-- Linux or macOS (tested on Ubuntu, Debian, macOS)
 
-**One-liner Installation:**
+**Quick Install (One Command):**
 ```bash
-git clone https://github.com/shii9/UrlShine.git && cd UrlShine && go build -o urlshine . && sudo mv urlshine /usr/local/bin/ && chmod +x /usr/local/bin/urlshine
+go install github.com/shii9/UrlShine@latest
 ```
 
-**Step-by-step Setup:**
+That's it! URLShine will be available in your `$GOPATH/bin/` (usually `~/go/bin/`).
+
+**Verify Installation:**
 ```bash
-# Clone repository
-git clone https://github.com/shii9/UrlShine.git
-cd UrlShine
-
-# Build binary
-go build -o urlshine .
-
-# Install globally
-sudo mv urlshine /usr/local/bin/
-chmod +x /usr/local/bin/urlshine
-
-# Verify installation
 urlshine --help
 ```
 
-**Optional URL Collection Tools** (install any to enhance results):
+---
+
+### Optional Collection Tools
 
 All of these tools are optional. URLShine gracefully skips tools that aren't installed.
 
-| Tool | Purpose | Installation |
-|------|---------|--------------|
-| [GAU](https://github.com/lc/gau) | GetAllUrls - archive & passive sources | `go install github.com/lc/gau/v2/cmd/gau@latest` |
-| [Katana](https://github.com/projectdiscovery/katana) | Active JS crawler | `go install github.com/projectdiscovery/katana/cmd/katana@latest` |
-| [GoSpider](https://github.com/jaeles-project/gospider) | HTML & JS crawler | `go install github.com/jaeles-project/gospider@latest` |
-| [Waymore](https://github.com/xnl-h4ck3r/waymore) | Advanced wayback scraper | `pip3 install waymore` |
-| [Waybackurls](https://github.com/tomnomnom/waybackurls) | Wayback URLs scraper | `go install github.com/tomnomnom/waybackurls@latest` |
-| [Hakrawler](https://github.com/hakluke/hakrawler) | HTML content crawler | `go install github.com/hakluke/hakrawler@latest` |
-| [xnLinkFinder](https://github.com/xnl-h4ck3r/xnLinkFinder) | JS endpoint extractor | `pip3 install xnLinkFinder` |
-| [Gobuster](https://github.com/OJ/gobuster) | Directory brute-force | `go install github.com/OJ/gobuster/v3@latest` |
-| [Dirb](https://sourceforge.net/projects/dirb/) | Directory enumeration | `apt-get install dirb` or `brew install dirb` |
-| [httpx](https://github.com/projectdiscovery/httpx) | HTTP probe (for live verification) | `go install github.com/projectdiscovery/httpx/cmd/httpx@latest` |
+| Tool | Installation |
+|------|--------------|
+| [GAU](https://github.com/lc/gau) | `go install github.com/lc/gau/v2/cmd/gau@latest` |
+| [Katana](https://github.com/projectdiscovery/katana) | `go install github.com/projectdiscovery/katana/cmd/katana@latest` |
+| [GoSpider](https://github.com/jaeles-project/gospider) | `go install github.com/jaeles-project/gospider@latest` |
+| [Waybackurls](https://github.com/tomnomnom/waybackurls) | `go install github.com/tomnomnom/waybackurls@latest` |
+| [Hakrawler](https://github.com/hakluke/hakrawler) | `go install github.com/hakluke/hakrawler@latest` |
+| [Gobuster](https://github.com/OJ/gobuster) | `go install github.com/OJ/gobuster/v3@latest` |
+| [Waymore](https://github.com/xnl-h4ck3r/waymore) | `pip3 install waymore` |
+| [xnLinkFinder](https://github.com/xnl-h4ck3r/xnLinkFinder) | `pip3 install xnLinkFinder` |
+| [Dirb](https://sourceforge.net/projects/dirb/) | `apt-get install dirb` or `brew install dirb` |
+| [httpx](https://github.com/projectdiscovery/httpx) | `go install github.com/projectdiscovery/httpx/cmd/httpx@latest` |
 
 ---
 
