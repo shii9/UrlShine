@@ -41,13 +41,18 @@ var rootCmd = &cobra.Command{
 	Use:   "urlshine [domain ...] [-f domains.txt]",
 	Short: "URLShine v2.0.0 - professional URL enumeration and reconnaissance",
 	Long: "URLShine collects URLs from selected reconnaissance tools. " +
-		"Use -all to run every collector and -complete to run the full post-collection pipeline.",
-	Example: `  urlshine -gau -katana google.com
-  urlshine -gau -katana -complete google.com
-  urlshine -all -complete google.com
-  urlshine -f domains.txt -all -complete -o ./results -t 100
-  urlshine -all -complete -no-alive google.com
-  urlshine -katana -complete -v google.com`,
+		"Use --all (or -a) to run every collector and --complete (or -c) to run the full post-collection pipeline.",
+	Example: `  urlshine --gau --katana google.com
+  urlshine -g -k google.com
+  urlshine --gau --katana --complete google.com
+  urlshine -g -k -c google.com
+  urlshine --all google.com
+  urlshine -a google.com
+  urlshine --all --complete google.com
+  urlshine -a -c google.com
+  urlshine -f domains.txt -a -c -o ./results -t 100
+  urlshine -a -c --no-alive google.com
+  urlshine -k -c -v google.com`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		targets, err := resolveTargets(args, flagFile)
 		if err != nil {
@@ -102,58 +107,70 @@ Professional URL Enumeration and Attack Surface Mapper
 USAGE
   urlshine [target ...] [flags]
 
-FLAGS EXPLAINED
-  -all        Use all tools (GAU, Katana, GoSpider, Waymore, Waybackurls, 
-              Hakrawler, xnLinkFinder, Gobuster, Dirb)
-  -complete   Complete all processing steps:
-              • Merging — Deduplicates all results
-              • Normalization — Cleans URLs
-              • Categorization — Splits into 5 attack groups
-              • Alive Checking — Verifies live hosts (unless -no-alive used)
+⚠️  IMPORTANT: FLAG FORMAT
+  Double dash (--) for long flags:    urlshine --all --complete google.com
+  Single dash (-) for short flags:    urlshine -a -c google.com
+  ❌ DO NOT use single dash with long names: -all or -complete (use --all or -a)
 
-COLLECTION TOOLS
-  -gau            GetAllUrls - archive & passive sources
-  -katana         Katana - active JS crawler
-  -gospider       GoSpider - HTML & JS crawler
-  -waymore        Waymore - advanced wayback scraper
-  -waybackurls    Wayback URLs - wayback machine scraper
-  -hakrawler      Hakrawler - HTML content crawler
-  -xnlinkfinder   xnLinkFinder - JS endpoint extractor
-  -gobuster       Gobuster - directory brute-force discovery
-  -dirb           Dirb - directory enumeration
+FLAGS EXPLAINED
+  --all, -a       Use all 9 tools (GAU, Katana, GoSpider, Waymore, Waybackurls, 
+                  Hakrawler, xnLinkFinder, Gobuster, Dirb)
+  --complete, -c  Complete all processing steps:
+                  • Merging — Deduplicates all results
+                  • Normalization — Cleans URLs
+                  • Categorization — Splits into 5 attack groups
+                  • Alive Checking — Verifies live hosts (unless --no-alive)
+
+COLLECTION TOOLS (use -- or - prefix)
+  --gau, -g           GetAllUrls - archive & passive sources
+  --katana, -k        Katana - active JS crawler
+  --gospider, -w      GoSpider - HTML & JS crawler
+  --waymore, -m       Waymore - advanced wayback scraper
+  --waybackurls, -b   Wayback URLs - wayback machine scraper
+  --hakrawler, -r     Hakrawler - HTML content crawler
+  --xnlinkfinder, -x  xnLinkFinder - JS endpoint extractor
+  --gobuster, -u      Gobuster - directory brute-force discovery
+  --dirb, -i          Dirb - directory enumeration
 
 EXAMPLES
-  urlshine -gau -katana google.com
-      Collect URLs with GAU and Katana only (no post-processing)
+  Long form (double dash):
+    urlshine --gau --katana google.com
+    urlshine --all --complete google.com
+    urlshine --all --complete -t 100 -d 5 google.com
 
-  urlshine -gau -katana -complete google.com
-      Collect with GAU and Katana, then run merging, normalization,
-      categorization, and alive checking
+  Short form (single dash):
+    urlshine -g -k google.com
+    urlshine -a -c google.com
+    urlshine -a -c -t 100 -d 5 google.com
 
-  urlshine -all google.com
-      Collect with all 9 tools (no post-processing)
-
-  urlshine -all -complete google.com
-      Collect with all 9 tools, then run complete processing pipeline
+  Mixed (both long and short):
+    urlshine --gau -k -c google.com
+    urlshine -a --complete -t 100 google.com
 
 OPTIONS
-  -t, --threads INT       Parallel threads (default: 50)
-  -d, --depth INT         Crawl depth for active tools (default: 5)
-  -o, --output DIR        Output directory
-  -f, --file FILE         Input file with targets (one per line)
-  -no-alive              Skip live host verification
-  -skip-collect          Reprocess existing data
-  -v, --verbose          Debug/verbose logging
+  -t, --threads INT        Parallel threads for tools and probing (default: 50)
+  -d, --depth INT          Crawl depth for active tools (default: 5)
+  -o, --output DIR         Output directory (default: urlshine_<timestamp>)
+  -f, --file FILE          Input file with targets (one per line)
+  -s, --subs               Include subdomains when supported (default: true)
+  -v, --verbose            Debug/verbose logging
+  --no-alive               Skip live host verification
+  --skip-collect           Skip collection and process existing files
 
 OUTPUT STRUCTURE
-  Without -complete:
+  Without --complete (or -c):
     {domain}_url/
     ├── gau.txt
     ├── katana.txt
     ├── gospider.txt
-    └── ... (per-tool files)
+    ├── waymore.txt
+    ├── waybackurls.txt
+    ├── hakrawler.txt
+    ├── xnlinkfinder.txt
+    ├── gobuster.txt
+    └── dirb.txt
 
-  With -complete:
+  With --complete (or -c):
     {domain}_url/
     ├── merged_urls.txt (all tools combined)
     ├── normalized_urls.txt (cleaned & deduplicated)
@@ -166,7 +183,7 @@ OUTPUT STRUCTURE
     ├── report.json
     └── report.html
 
-FLAGS
+ALL FLAGS
 `, version)
 		cmd.Flags().PrintDefaults()
 		fmt.Println("")

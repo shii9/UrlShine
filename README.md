@@ -71,26 +71,39 @@ All tools are optional. URLShine gracefully skips tools that aren't installed.
 
 ## 🚀 Quick Start
 
-**Collect URLs only (fast):**
+### ⚠️ Flag Format (Important!)
+- **Long flags**: Double dash `--` → `--all`, `--complete`
+- **Short flags**: Single dash `-` → `-a`, `-c`
+- **❌ Wrong**: Never use single dash with long names → `-all`, `-complete`
+
+### Examples
+
+**Collect URLs only:**
 ```bash
-urlshine -gau -katana google.com
-urlshine -all google.com
+# Long form
+urlshine --gau --katana google.com
+urlshine --all google.com
+
+# Short form
+urlshine -g -k google.com
+urlshine -a google.com
 ```
 
-**Collect URLs + complete processing:**
+**Collect + Complete processing:**
 ```bash
-urlshine -gau -katana -complete google.com
-urlshine -all -complete google.com
+urlshine -a -c google.com
+urlshine -g -k -c google.com
+urlshine -a -c -t 100 -d 5 google.com
 ```
 
-**Process multiple domains:**
+**Process multiple domains from file:**
 ```bash
-urlshine -f targets.txt -all -complete -t 150 -d 3 -o ./results
+urlshine -f targets.txt -a -c -t 150 -d 3 -o ./results
 ```
 
-**With custom settings:**
+**Skip live verification:**
 ```bash
-urlshine -all -complete -t 100 -d 5 -no-alive google.com
+urlshine -a -c --no-alive google.com
 ```
 
 ---
