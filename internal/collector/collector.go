@@ -133,14 +133,18 @@ func RunAll(targets []string, rawDir string, cfg Config) ([]string, error) {
 	}()
 
 	var (
-		mu       sync.Mutex
-		outFiles []string
-		wg       sync.WaitGroup
-		sem      = make(chan struct{}, 10) // max 10 concurrent tool executions for aggressive parallelism
+		mu             sync.Mutex
+		outFiles       []string
+		wg             sync.WaitGroup
+		sem            = make(chan struct{}, 10) // max 10 concurrent tool executions for aggressive parallelism
+		completedJobs  = 0
+		targetProgress = make(map[string]int)
 	)
 
-	totalJobs := len(activeTools) * len(targets)
-	completedJobs := 0
+	// Initialize per-target tracking
+	for _, t := range targets {
+		targetProgress[t] = 0
+	}
 
 	for j := range jobs {
 		wg.Add(1)
@@ -153,9 +157,7 @@ func RunAll(targets []string, rawDir string, cfg Config) ([]string, error) {
 				logger.ToolResult(j.tool.name, j.target, 0, true)
 				mu.Lock()
 				completedJobs++
-				if completedJobs%10 == 0 {
-					logger.Debug("[%d/%d] Collection jobs completed", completedJobs, totalJobs)
-				}
+				targetProgress[j.target]++
 				mu.Unlock()
 				return
 			}
@@ -163,9 +165,10 @@ func RunAll(targets []string, rawDir string, cfg Config) ([]string, error) {
 			logger.Run("%-20s → %s", j.tool.name, j.target)
 			lines, err := j.tool.fn(j.target, rawDir, cfg)
 			if err != nil {
-				logger.Warn("%-20s [%s] error: %v", j.tool.name, j.target, err)
+				logger.Warn("%-20s [%s] failed", j.tool.name, j.target)
 				mu.Lock()
 				completedJobs++
+				targetProgress[j.target]++
 				mu.Unlock()
 				return
 			}
@@ -183,6 +186,7 @@ func RunAll(targets []string, rawDir string, cfg Config) ([]string, error) {
 				logger.Error("write %s: %v", outFile, err)
 				mu.Lock()
 				completedJobs++
+				targetProgress[j.target]++
 				mu.Unlock()
 				return
 			}
@@ -192,9 +196,7 @@ func RunAll(targets []string, rawDir string, cfg Config) ([]string, error) {
 			mu.Lock()
 			outFiles = append(outFiles, outFile)
 			completedJobs++
-			if completedJobs%10 == 0 {
-				logger.Debug("[%d/%d] Collection jobs completed", completedJobs, totalJobs)
-			}
+			targetProgress[j.target]++
 			mu.Unlock()
 		}(j)
 	}

@@ -34,18 +34,18 @@ func SetLevel(l Level) { mu.Lock(); current = l; mu.Unlock() }
 func SetVerbose(v bool) { mu.Lock(); verbose = v; mu.Unlock() }
 
 var (
-	pInfo    = color.New(color.FgCyan, color.Bold).Sprint("INF")
-	pOK      = color.New(color.FgGreen, color.Bold).Sprint(" ✔ ")
-	pWarn    = color.New(color.FgYellow, color.Bold).Sprint(" ! ")
-	pErr     = color.New(color.FgRed, color.Bold).Sprint(" ✘ ")
-	pRun     = color.New(color.FgMagenta, color.Bold).Sprint("RUN")
-	pSkip    = color.New(color.Faint).Sprint("---")
-	pDebug   = color.New(color.FgWhite, color.Faint).Sprint("DBG")
+	pInfo  = color.New(color.FgCyan, color.Bold).Sprint("INF")
+	pOK    = color.New(color.FgGreen, color.Bold).Sprint(" ✔ ")
+	pWarn  = color.New(color.FgYellow, color.Bold).Sprint(" ! ")
+	pErr   = color.New(color.FgRed, color.Bold).Sprint(" ✘ ")
+	pRun   = color.New(color.FgMagenta, color.Bold).Sprint("RUN")
+	pSkip  = color.New(color.Faint).Sprint("---")
+	pDebug = color.New(color.FgWhite, color.Faint).Sprint("DBG")
 
-	cFaint = color.New(color.Faint).SprintFunc()
-	cWhite = color.New(color.FgWhite, color.Bold).SprintFunc()
-	cCyan  = color.New(color.FgCyan, color.Bold).SprintFunc()
-	cGreen = color.New(color.FgGreen, color.Bold).SprintFunc()
+	cFaint  = color.New(color.Faint).SprintFunc()
+	cWhite  = color.New(color.FgWhite, color.Bold).SprintFunc()
+	cCyan   = color.New(color.FgCyan, color.Bold).SprintFunc()
+	cGreen  = color.New(color.FgGreen, color.Bold).SprintFunc()
 	cYellow = color.New(color.FgYellow, color.Bold).SprintFunc()
 )
 
@@ -116,8 +116,16 @@ func ToolResult(tool, target string, count int, skipped bool) {
 		fmt.Printf("  %s  %s  %-20s  %s\n", ts(), pSkip, tool, cFaint("not installed"))
 		return
 	}
+	var result string
+	if count == 0 {
+		result = cYellow(fmt.Sprintf("→ 0 URLs"))
+	} else if count > 5000 {
+		result = cGreen(fmt.Sprintf("→ %s URLs", FormatN(count)))
+	} else {
+		result = cGreen(fmt.Sprintf("→ %s URLs", FormatN(count)))
+	}
 	fmt.Printf("  %s  %s  %-20s  %-30s  %s\n",
-		ts(), pOK, cWhite(tool), cFaint(target), cGreen(fmt.Sprintf("→ %s URLs", FormatN(count))),
+		ts(), pOK, cWhite(tool), cFaint(target), result,
 	)
 }
 
@@ -126,6 +134,26 @@ func BlankLine() {
 	mu.Lock()
 	defer mu.Unlock()
 	fmt.Println()
+}
+
+// SectionHeader prints a professional section divider
+func SectionHeader(title string) {
+	mu.Lock()
+	defer mu.Unlock()
+	fmt.Println()
+	fmt.Printf("  %s  %s\n", cCyan("▸"), cWhite(strings.ToUpper(title)))
+	fmt.Printf("  %s\n", cFaint(strings.Repeat("─", 80)))
+	fmt.Println()
+}
+
+// CollectionProgress shows overall collection progress
+func CollectionProgress(completed, total int, target string) {
+	mu.Lock()
+	defer mu.Unlock()
+	percent := (completed * 100) / total
+	bar := strings.Repeat("█", percent/5) + strings.Repeat("░", 20-percent/5)
+	fmt.Printf("  %s  [%s] %d/%d  %s\n",
+		ts(), bar, completed, total, cFaint(target))
 }
 
 // FormatN formats large numbers with K/M suffixes.

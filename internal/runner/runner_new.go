@@ -72,11 +72,15 @@ func RunProfessional(opts Options) error {
 	logger.Info("Configuration: %d threads | depth %d | all tools %v | complete %v",
 		opts.Threads, opts.Depth, opts.RunAll, opts.RunComplete)
 
+	logger.SectionHeader("External Tools Status")
+
 	rawDir := filepath.Join(opts.OutputDir, "raw")
 	if !opts.SkipCollect {
+		logger.SectionHeader("Collecting URLs from All Tools")
 		if _, err := collector.RunAll(opts.Targets, rawDir, cfg); err != nil {
 			logger.Warn("collection error: %v", err)
 		}
+		logger.BlankLine()
 	} else {
 		logger.Skip("collection skipped; using existing per-tool or raw files")
 	}
@@ -91,14 +95,14 @@ func RunProfessional(opts Options) error {
 
 	if !opts.RunComplete {
 		logger.Info("")
-		logger.Success("Collection complete")
-		logger.Info("Use -complete to merge, normalize, categorize, report, and verify live URLs.")
+		logger.SectionHeader("Collection Complete")
+		logger.Info("Use -complete flag to run: merge, normalize, categorize, alive-check, and reports")
 		printOutputSummary(opts, start, false)
 		return nil
 	}
 
 	logger.Info("")
-	logger.Info("Phase 2: Complete processing pipeline")
+	logger.SectionHeader("Phase 2: Processing Pipeline")
 
 	stats := reporter.Stats{
 		Targets:     opts.Targets,
@@ -110,8 +114,8 @@ func RunProfessional(opts Options) error {
 
 	for idx, target := range opts.Targets {
 		targetDir := targetDirs[target]
-		logger.Info("")
-		logger.Info("[%d/%d] Processing %s", idx+1, len(opts.Targets), filepath.Base(targetDir))
+		logger.BlankLine()
+		logger.SectionHeader(fmt.Sprintf("Target %d/%d: %s", idx+1, len(opts.Targets), target))
 
 		logger.Step(1, 4, "Merging and deduplicating")
 		mergedFile := filepath.Join(targetDir, "merged_urls.txt")
