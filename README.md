@@ -240,16 +240,28 @@ urlshine -f massive-targets.txt -all -complete -t 150 -d 3 -o ./batch_results -v
 
 ### Collection vs Complete Processing
 
-**Collection Only Mode** (default, without `-complete`):
+**What is `-all`?**
+- `-all` means use all 9 tools (GAU, Katana, GoSpider, Waymore, Waybackurls, Hakrawler, xnLinkFinder, Gobuster, Dirb)
+- Runs tools in parallel with aggressive settings
+- Can be combined with `-complete` for full processing
+
+**What is `-complete`?**
+- `-complete` means complete all processing steps:
+  - **Merging** — Deduplicates all results
+  - **Normalization** — Cleans URLs
+  - **Categorization** — Splits into 5 attack groups
+  - **Alive Checking** — Verifies live hosts
+
+**Collection Only Mode** (without `-complete`):
 - ✅ Runs selected URL collection tools
 - ✅ Saves per-tool result files (gau.txt, katana.txt, etc.)
-- ⏱️ **Fast**: Ideal for quick enumeration, recon, or large-scale collection
+- ⏱️ **Fast**: Ideal for quick enumeration and large-scale collection
 - 💾 **Output**: `{domain}_url/` folder with per-tool files
 
 **Complete Pipeline Mode** (with `-complete`):
-- ✅ Collects URLs (same as above)
-- ✅ **Merges** all tool outputs into single file
-- ✅ **Normalizes** & deduplicates URLs (removes ports, schemes, junk)
+- ✅ Collects URLs with selected tools
+- ✅ **Merges** all results (deduplicates)
+- ✅ **Normalizes** URLs (cleans schemes, ports, removes junk)
 - ✅ **Categorizes** into 5 attack groups:
   - API endpoints
   - Auth & admin pages
@@ -263,54 +275,39 @@ urlshine -f massive-targets.txt -all -complete -t 150 -d 3 -o ./batch_results -v
 
 ### About the `-all` Flag
 
-When you use `-all`, URLShine automatically runs:
-- ✅ All 9 URL collection tools (GAU, Katana, GoSpider, Waymore, Waybackurls, Hakrawler, xnLinkFinder, Gobuster, Dirb)
+**-all means use all tools:**
+- ✅ Runs all 9 URL collection tools (GAU, Katana, GoSpider, Waymore, Waybackurls, Hakrawler, xnLinkFinder, Gobuster, Dirb)
 - ✅ Parallel execution with 10 concurrent tool executors (50 threads per tool by default)
 - ✅ Aggressive parameters: depth 5, 50 threads, multiple concurrent sources
 
-**Use `-complete` with `-all`** to get the full processing pipeline:
+**Use `-complete` with `-all`** to get the full post-processing pipeline:
 ```bash
-urlshine -all -complete google.com
+urlshine -all google.com                    # Just collection (fast)
+urlshine -all -complete google.com          # Collection + all processing steps
 ```
 
 ### About the `-complete` Flag
 
 The `-complete` flag enables the full post-processing pipeline:
-1. **Merge** - Combine outputs from all collection tools
-2. **Normalize** - Deduplicate URLs, clean schemes & ports
-3. **Categorize** - Extract into 5 specialized attack groups
-4. **Advanced Extraction** - Use specialized tools for each category
-5. **Live Verification** - Check which URLs are live (httpx)
-6. **Professional Reports** - Generate HTML & JSON summaries
+
+- ✅ **Merging** — Deduplicates all results
+- ✅ **Normalization** — Cleans URLs
+- ✅ **Categorization** — Splits into 5 attack groups
+- ✅ **Alive Checking** — Verifies live hosts (can be disabled with `-no-alive`)
 
 **Without `-complete`** (Collection mode):
 ```bash
-urlshine -all google.com                    # Only collect URLs
-urlshine -gau -katana google.com            # Collect with specific tools
+urlshine -gau -katana google.com                # Collect with GAU and Katana
+urlshine -all google.com                        # Collect with all 9 tools
 ```
 
 **With `-complete`** (Full pipeline):
 ```bash
-urlshine -all -complete google.com          # Collect + process all
-urlshine -gau -katana -complete google.com  # Collect specific tools + process
+urlshine -gau -katana -complete google.com      # Collect + complete all steps
+urlshine -all -complete google.com              # Collect all + complete all steps
 ```
 
 The `-complete` flag works with any combination of collection tools!
-
-**Example with combinations:**
-```bash
-# All tools are already in -all, this runs the same as 'urlshine -all google.com'
-urlshine -all google.com
-
-# Add extra verbosity
-urlshine -all -v google.com
-
-# Increase threads and depth
-urlshine -all -t 150 -d 5 google.com
-
-# Fast mode with all tools
-urlshine -all -no-alive -t 100 google.com
-```
 
 ## ⚙️ Requirements
 

@@ -102,41 +102,69 @@ Professional URL Enumeration and Attack Surface Mapper
 USAGE
   urlshine [target ...] [flags]
 
-WORKFLOW
-  Collection tools:
-    -gau, -katana, -gospider, -waymore, -waybackurls,
-    -hakrawler, -xnlinkfinder, -gobuster, -dirb
+FLAGS EXPLAINED
+  -all        Use all tools (GAU, Katana, GoSpider, Waymore, Waybackurls, 
+              Hakrawler, xnLinkFinder, Gobuster, Dirb)
+  -complete   Complete all processing steps:
+              • Merging — Deduplicates all results
+              • Normalization — Cleans URLs
+              • Categorization — Splits into 5 attack groups
+              • Alive Checking — Verifies live hosts (unless -no-alive used)
 
-  Pipeline flags:
-    -all        Run all supported collection tools
-    -complete   Run post-collection pipeline:
-                merging, deduplication, normalization, categorization,
-                and alive checking unless -no-alive is set
+COLLECTION TOOLS
+  -gau            GetAllUrls - archive & passive sources
+  -katana         Katana - active JS crawler
+  -gospider       GoSpider - HTML & JS crawler
+  -waymore        Waymore - advanced wayback scraper
+  -waybackurls    Wayback URLs - wayback machine scraper
+  -hakrawler      Hakrawler - HTML content crawler
+  -xnlinkfinder   xnLinkFinder - JS endpoint extractor
+  -gobuster       Gobuster - directory brute-force discovery
+  -dirb           Dirb - directory enumeration
 
 EXAMPLES
   urlshine -gau -katana google.com
-      Run only GAU and Katana and save per-tool results.
+      Collect URLs with GAU and Katana only (no post-processing)
 
   urlshine -gau -katana -complete google.com
-      Run GAU and Katana, then merge, normalize, categorize, and probe live URLs.
+      Collect with GAU and Katana, then run merging, normalization,
+      categorization, and alive checking
+
+  urlshine -all google.com
+      Collect with all 9 tools (no post-processing)
 
   urlshine -all -complete google.com
-      Run every collector and the complete processing pipeline.
+      Collect with all 9 tools, then run complete processing pipeline
 
-  urlshine -all -complete -no-alive google.com
-      Run every collector and complete processing, but skip live probing.
+OPTIONS
+  -t, --threads INT       Parallel threads (default: 50)
+  -d, --depth INT         Crawl depth for active tools (default: 5)
+  -o, --output DIR        Output directory
+  -f, --file FILE         Input file with targets (one per line)
+  -no-alive              Skip live host verification
+  -skip-collect          Reprocess existing data
+  -v, --verbose          Debug/verbose logging
 
-TARGET INPUT
-  urlshine google.com                 Single target
-  urlshine google.com yahoo.com       Multiple targets
-  urlshine -f domains.txt             Targets from file
+OUTPUT STRUCTURE
+  Without -complete:
+    {domain}_url/
+    ├── gau.txt
+    ├── katana.txt
+    ├── gospider.txt
+    └── ... (per-tool files)
 
-OUTPUT
-  Each target gets a domain-specific folder such as google_com_url/.
-  Collection-only runs write per-tool files.
-  Complete runs also write merged_urls.txt, normalized_urls.txt,
-  api_urls.txt, auth_admin_urls.txt, params_urls.txt,
-  js_config_urls.txt, directories_urls.txt, reports, and optionally alive_urls.txt.
+  With -complete:
+    {domain}_url/
+    ├── merged_urls.txt (all tools combined)
+    ├── normalized_urls.txt (cleaned & deduplicated)
+    ├── api_endpoints.txt (API paths)
+    ├── auth_admin_urls.txt (authentication pages)
+    ├── parameters.txt (URLs with parameters)
+    ├── js_config.txt (JavaScript & config files)
+    ├── directories.txt (directory paths)
+    ├── alive_urls.txt (verified live hosts)
+    ├── report.json
+    └── report.html
 
 FLAGS
 `, version)
