@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const version = "2.0.0"
+
 var (
 	flagFile      string
 	flagOutputDir string
@@ -21,6 +23,7 @@ var (
 	flagNoAlive   bool
 	flagSkipCol   bool
 	flagVerbose   bool
+	flagComplete  bool
 
 	flagAll          bool
 	flagGau          bool
@@ -36,14 +39,15 @@ var (
 
 var rootCmd = &cobra.Command{
 	Use:   "urlshine [domain ...] [-f domains.txt]",
-	Short: "URLShine v2 — professional URL enumeration & reconnaissance",
-	Long:  "URLShine collects URLs from 9 tools with aggressive parallel execution, normalizes, splits into groups, checks alive, and generates professional reports.",
-	Example: `  urlshine google.com
-  urlshine google.com yahoo.com
-  urlshine -f domains.txt
-  urlshine -f domains.txt -o ./results -t 50
-  urlshine google.com --no-alive -d 2
-  urlshine google.com --verbose`,
+	Short: "URLShine v2.0.0 - professional URL enumeration and reconnaissance",
+	Long: "URLShine collects URLs from selected reconnaissance tools. " +
+		"Use -all to run every collector and -complete to run the full post-collection pipeline.",
+	Example: `  urlshine -gau -katana google.com
+  urlshine -gau -katana -complete google.com
+  urlshine -all -complete google.com
+  urlshine -f domains.txt -all -complete -o ./results -t 100
+  urlshine -all -complete -no-alive google.com
+  urlshine -katana -complete -v google.com`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		targets, err := resolveTargets(args, flagFile)
 		if err != nil {
@@ -58,8 +62,6 @@ var rootCmd = &cobra.Command{
 			outDir = "urlshine_" + time.Now().Format("20060102_150405")
 		}
 
-		// Info logged by RunProfessional
-
 		return runner.RunProfessional(runner.Options{
 			Targets:     targets,
 			OutputDir:   outDir,
@@ -69,6 +71,7 @@ var rootCmd = &cobra.Command{
 			SkipAlive:   flagNoAlive,
 			SkipCollect: flagSkipCol,
 			Verbose:     flagVerbose,
+			RunComplete: flagComplete,
 
 			RunAll:          flagAll,
 			RunGau:          flagGau,
@@ -91,155 +94,68 @@ func Execute() {
 }
 
 func init() {
-	// Professional custom help menu
 	rootCmd.SetHelpFunc(func(cmd *cobra.Command, args []string) {
-		fmt.Println("")
-		fmt.Println("  ╔════════════════════════════════════════════════════════════╗")
-		fmt.Println("  ║        URLShine v2.0.0 - Professional Help Menu             ║")
-		fmt.Println("  ║     Aggressive URL Enumeration & Attack Surface Mapper      ║")
-		fmt.Println("  ╚════════════════════════════════════════════════════════════╝")
-		fmt.Println("")
+		fmt.Printf(`
+URLShine v%s
+Professional URL Enumeration and Attack Surface Mapper
 
-		fmt.Println("  📖 OVERVIEW")
-		fmt.Println("  ──────────────────────────────────────────────────────────────")
-		fmt.Println("  URLShine automates large-scale URL enumeration from 9 advanced tools:")
-		fmt.Println("  GAU, Katana, GoSpider, Waymore, Wayback URLs, Hakrawler, xnLinkFinder,")
-		fmt.Println("  Gobuster, and Dirb for comprehensive coverage.")
-		fmt.Println("")
-		fmt.Println("  Features:")
-		fmt.Println("    • Creates domain-specific folders for organized results")
-		fmt.Println("    • Per-tool URL files for individual tool analysis")
-		fmt.Println("    • Automatic URL normalization and deduplication")
-		fmt.Println("    • Categorizes URLs: API, Auth, Parameters, JS/Config, Directories")
-		fmt.Println("    • Professional progress tracking and reporting")
-		fmt.Println("    • Aggressive parallel execution for maximum performance")
-		fmt.Println("")
+USAGE
+  urlshine [target ...] [flags]
 
-		fmt.Println("  🚀 QUICK START")
-		fmt.Println("  ──────────────────────────────────────────────────────────────")
-		fmt.Println("    # Single domain - auto-runs all 9 tools")
-		fmt.Println("    urlshine google.com")
-		fmt.Println("")
-		fmt.Println("    # Specific tools only")
-		fmt.Println("    urlshine -gau -katana google.com")
-		fmt.Println("")
-		fmt.Println("    # All tools with aggressive settings (includes -gobuster -dirb)")
-		fmt.Println("    urlshine -all -t 100 -d 5 google.com")
-		fmt.Println("")
-		fmt.Println("    # Process file with all tools")
-		fmt.Println("    urlshine -f targets.txt -all -t 150 -d 3 -o ./results")
-		fmt.Println("")
-		fmt.Println("    # Fast mode (skip alive checking)")
-		fmt.Println("    urlshine -all -no-alive -t 100 google.com")
-		fmt.Println("")
+WORKFLOW
+  Collection tools:
+    -gau, -katana, -gospider, -waymore, -waybackurls,
+    -hakrawler, -xnlinkfinder, -gobuster, -dirb
 
-		fmt.Println("  📋 USAGE")
-		fmt.Println("  ──────────────────────────────────────────────────────────────")
-		fmt.Println("    urlshine [target ...] [flags]")
-		fmt.Println("")
+  Pipeline flags:
+    -all        Run all supported collection tools
+    -complete   Run post-collection pipeline:
+                merging, deduplication, normalization, categorization,
+                and alive checking unless -no-alive is set
 
-		fmt.Println("  🎯 TARGET OPTIONS")
-		fmt.Println("  ──────────────────────────────────────────────────────────────")
-		fmt.Printf("    %-25s %s\n", "urlshine google.com", "Single domain")
-		fmt.Printf("    %-25s %s\n", "urlshine target1 target2", "Multiple domains")
-		fmt.Printf("    %-25s %s\n", "urlshine -f domains.txt", "Domains from file")
-		fmt.Println("")
+EXAMPLES
+  urlshine -gau -katana google.com
+      Run only GAU and Katana and save per-tool results.
 
-		fmt.Println("  ⚙️  CONFIGURATION FLAGS")
-		fmt.Println("  ──────────────────────────────────────────────────────────────")
-		fmt.Printf("    %-25s %s\n", "-o, --output", "Output directory (default: urlshine_<timestamp>)")
-		fmt.Printf("    %-25s %s\n", "-t, --threads", "Threads for collection (default: 50, max: 200)")
-		fmt.Printf("    %-25s %s\n", "-d, --depth", "Crawl depth for active tools (default: 5)")
-		fmt.Printf("    %-25s %s\n", "-s, --subs", "Include subdomains (default: true)")
-		fmt.Println("")
+  urlshine -gau -katana -complete google.com
+      Run GAU and Katana, then merge, normalize, categorize, and probe live URLs.
 
-		fmt.Println("  🔧 URL COLLECTION TOOLS")
-		fmt.Println("  ──────────────────────────────────────────────────────────────")
-		fmt.Printf("    %-25s %s\n", "-all", "Run all 9 tools + gobuster + dirb automatically")
-		fmt.Printf("    %-25s %s\n", "-gau", "GAU (GetAllUrls) - archive sources")
-		fmt.Printf("    %-25s %s\n", "-katana", "Katana - JS crawler")
-		fmt.Printf("    %-25s %s\n", "-gospider", "GoSpider - HTML & JS crawler")
-		fmt.Printf("    %-25s %s\n", "-waymore", "Waymore - advanced wayback scraper")
-		fmt.Printf("    %-25s %s\n", "-waybackurls", "Wayback URLs - wayback machine")
-		fmt.Printf("    %-25s %s\n", "-hakrawler", "Hakrawler - HTML crawler")
-		fmt.Printf("    %-25s %s\n", "-xnlinkfinder", "xnLinkFinder - JS extractor")
-		fmt.Printf("    %-25s %s\n", "-gobuster", "Gobuster - directory brute-force")
-		fmt.Printf("    %-25s %s\n", "-dirb", "Dirb - directory enumeration")
-		fmt.Println("")
+  urlshine -all -complete google.com
+      Run every collector and the complete processing pipeline.
 
-		fmt.Println("  🔍 PROCESSING OPTIONS")
-		fmt.Println("  ──────────────────────────────────────────────────────────────")
-		fmt.Printf("    %-25s %s\n", "-no-alive", "Skip HTTP alive verification (fast mode)")
-		fmt.Printf("    %-25s %s\n", "-skip-collect", "Reprocess existing data (skip collection)")
-		fmt.Printf("    %-25s %s\n", "-v, --verbose", "Debug/verbose logging output")
-		fmt.Println("")
+  urlshine -all -complete -no-alive google.com
+      Run every collector and complete processing, but skip live probing.
 
-		fmt.Println("  📁 OUTPUT STRUCTURE")
-		fmt.Println("  ──────────────────────────────────────────────────────────────")
-		fmt.Println("    For domain 'google.com', creates:")
-		fmt.Println("")
-		fmt.Println("    google_url/")
-		fmt.Println("    ├── gau.txt                    (GAU collected URLs)")
-		fmt.Println("    ├── katana.txt                 (Katana crawler results)")
-		fmt.Println("    ├── gospider.txt               (GoSpider results)")
-		fmt.Println("    ├── waymore.txt                (Waymore results)")
-		fmt.Println("    ├── waybackurls.txt            (Wayback URLs results)")
-		fmt.Println("    ├── hakrawler.txt              (Hakrawler results)")
-		fmt.Println("    ├── xnlinkfinder.txt           (xnLinkFinder results)")
-		fmt.Println("    ├── gobuster.txt               (Gobuster directory discovery)")
-		fmt.Println("    ├── dirb.txt                   (Dirb directory brute-force)")
-		fmt.Println("    ├── merged_urls.txt            (All URLs combined)")
-		fmt.Println("    ├── normalized_urls.txt        (Cleaned & deduplicated)")
-		fmt.Println("    ├── api_urls.txt               (API endpoints)")
-		fmt.Println("    ├── auth_admin_urls.txt        (Auth & admin pages)")
-		fmt.Println("    ├── params_urls.txt            (URLs with parameters)")
-		fmt.Println("    ├── js_config_urls.txt         (JS & config files)")
-		fmt.Println("    └── directories_urls.txt       (Directory paths)")
-		fmt.Println("")
+TARGET INPUT
+  urlshine google.com                 Single target
+  urlshine google.com yahoo.com       Multiple targets
+  urlshine -f domains.txt             Targets from file
 
-		fmt.Println("  📊 COMMAND EXAMPLES")
-		fmt.Println("  ──────────────────────────────────────────────────────────────")
-		fmt.Println("    Small scope (1-100 targets):")
-		fmt.Println("      urlshine -all -t 50 -d 5 -f targets.txt")
-		fmt.Println("")
-		fmt.Println("    Medium scope (100-1000 targets):")
-		fmt.Println("      urlshine -all -t 100 -d 3 -f targets.txt")
-		fmt.Println("")
-		fmt.Println("    Large scope (1000+ targets):")
-		fmt.Println("      urlshine -all -t 150 -d 2 -no-alive -f targets.txt")
-		fmt.Println("")
-		fmt.Println("    Selective tools:")
-		fmt.Println("      urlshine -gau -katana -gobuster -t 50 google.com")
-		fmt.Println("")
+OUTPUT
+  Each target gets a domain-specific folder such as google_com_url/.
+  Collection-only runs write per-tool files.
+  Complete runs also write merged_urls.txt, normalized_urls.txt,
+  api_urls.txt, auth_admin_urls.txt, params_urls.txt,
+  js_config_urls.txt, directories_urls.txt, reports, and optionally alive_urls.txt.
 
-		fmt.Println("  💡 ABOUT -all FLAG")
-		fmt.Println("  ──────────────────────────────────────────────────────────────")
-		fmt.Println("    When using -all, URLShine automatically:")
-		fmt.Println("      ✓ Runs all 9 URL collection tools")
-		fmt.Println("      ✓ Includes Gobuster for directory discovery")
-		fmt.Println("      ✓ Includes Dirb for directory brute-forcing")
-		fmt.Println("      ✓ Performs URL normalization and deduplication")
-		fmt.Println("      ✓ Advanced extraction for 5 specialized groups")
-		fmt.Println("      ✓ Optional live host verification (disable with -no-alive)")
-		fmt.Println("")
-		fmt.Println("  📚 RESOURCES")
-		fmt.Println("  ──────────────────────────────────────────────────────────────")
-		fmt.Println("    GitHub: https://github.com/shii9/UrlShine")
-		fmt.Println("    Docs:   See README.md for detailed documentation")
+FLAGS
+`, version)
+		cmd.Flags().PrintDefaults()
 		fmt.Println("")
 	})
 
 	f := rootCmd.Flags()
 	f.StringVarP(&flagFile, "file", "f", "", "Input file with targets (one per line)")
 	f.StringVarP(&flagOutputDir, "output", "o", "", "Output directory (default: urlshine_<timestamp>)")
-	f.IntVarP(&flagThreads, "threads", "t", 50, "Parallel threads (default: 50, max: 200+)")
-	f.IntVarP(&flagDepth, "depth", "d", 5, "Crawl depth for active tools (default: 5)")
-	f.BoolVarP(&flagSubs, "subs", "s", true, "Include subdomains (default: true)")
-	f.BoolVar(&flagNoAlive, "no-alive", false, "Skip live host verification (fast mode)")
-	f.BoolVar(&flagSkipCol, "skip-collect", false, "Reprocess existing data (skip collection)")
-	f.BoolVarP(&flagVerbose, "verbose", "v", false, "Debug/verbose logging output")
+	f.IntVarP(&flagThreads, "threads", "t", 50, "Parallel threads for tools and probing")
+	f.IntVarP(&flagDepth, "depth", "d", 5, "Crawl depth for active tools")
+	f.BoolVarP(&flagSubs, "subs", "s", true, "Include subdomains when supported")
+	f.BoolVar(&flagNoAlive, "no-alive", false, "Skip live host verification during -complete")
+	f.BoolVar(&flagSkipCol, "skip-collect", false, "Skip collection and process existing files")
+	f.BoolVarP(&flagVerbose, "verbose", "v", false, "Enable debug/verbose logging")
+	f.BoolVar(&flagComplete, "complete", false, "Run merge, normalize, categorize, reports, and alive checking")
 
-	f.BoolVar(&flagAll, "all", false, "Run all 9 tools + gobuster + dirb")
+	f.BoolVar(&flagAll, "all", false, "Run all supported collection tools")
 	f.BoolVar(&flagGau, "gau", false, "Run GAU (GetAllUrls)")
 	f.BoolVar(&flagGospider, "gospider", false, "Run GoSpider")
 	f.BoolVar(&flagKatana, "katana", false, "Run Katana")
@@ -247,8 +163,8 @@ func init() {
 	f.BoolVar(&flagWaybackurls, "waybackurls", false, "Run Waybackurls")
 	f.BoolVar(&flagHakrawler, "hakrawler", false, "Run Hakrawler")
 	f.BoolVar(&flagXnlinkfinder, "xnlinkfinder", false, "Run xnLinkFinder")
-	f.BoolVar(&flagGobuster, "gobuster", false, "Run Gobuster (directory discovery)")
-	f.BoolVar(&flagDirb, "dirb", false, "Run Dirb (directory brute-forcing)")
+	f.BoolVar(&flagGobuster, "gobuster", false, "Run Gobuster directory discovery")
+	f.BoolVar(&flagDirb, "dirb", false, "Run Dirb directory enumeration")
 }
 
 func resolveTargets(args []string, file string) ([]string, error) {

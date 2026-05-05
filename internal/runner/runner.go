@@ -26,6 +26,7 @@ type Options struct {
 	SkipAlive   bool
 	SkipCollect bool
 	Verbose     bool
+	RunComplete bool
 
 	RunAll          bool
 	RunGau          bool

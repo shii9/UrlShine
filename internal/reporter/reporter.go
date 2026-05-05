@@ -89,8 +89,6 @@ func Print(s Stats, dur time.Duration) {
 
 // WriteReports writes markdown and JSON reports.
 func WriteReports(s Stats) error {
-	s.DurationSec = float64(time.Now().Unix()) // mock for json struct simplicity if duration not passed
-
 	// JSON
 	jPath := filepath.Join(s.OutputDir, "urlshine_report.json")
 	if err := utils.WriteJSON(jPath, s); err != nil {
@@ -110,6 +108,9 @@ func WriteReports(s Stats) error {
 		fmt.Fprintf(sb, "| %s | %d | %d |\n", g.label, s.Groups[g.key], s.AliveGroups[g.key])
 	}
 	fmt.Fprintf(sb, "\n**Unique Parameters:** %d\n", s.UniqueParams)
+	if verified := s.AliveGroups["verified"]; verified > 0 {
+		fmt.Fprintf(sb, "\n**Verified Live URLs:** %d\n", verified)
+	}
 
 	return os.WriteFile(filepath.Join(s.OutputDir, "urlshine_report.md"), []byte(sb.String()), 0644)
 }

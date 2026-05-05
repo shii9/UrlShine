@@ -138,10 +138,10 @@ func (ge *GroupExtractor) ExtractAuthAdmin() ([]string, error) {
 
 	// Use gobuster/feroxbuster for hidden paths if available
 	if commandExists("gobuster") {
-		ge.extractWithGobuster(authAdmin)
+		authAdmin = append(authAdmin, ge.extractWithGobuster(authAdmin)...)
 	}
 
-	return authAdmin, nil
+	return utils.DeduplicateSort(authAdmin), nil
 }
 
 // ExtractParameters finds URLs with parameters.
@@ -165,7 +165,7 @@ func (ge *GroupExtractor) ExtractParameters() ([]string, error) {
 		withParams = append(withParams, discovered...)
 	}
 
-	return withParams, nil
+	return utils.DeduplicateSort(withParams), nil
 }
 
 // ExtractJSConfig finds JavaScript and configuration files.
@@ -353,7 +353,7 @@ func commandExists(cmd string) bool {
 func (ge *GroupExtractor) SaveResults(groups map[string][]string) error {
 	for name, urls := range groups {
 		// Convert group name to filename
-		filename := strings.ToLower(strings.ReplaceAll(name, " ", "_"))
+		filename := safeGroupFilename(name)
 		filename += ".txt"
 
 		filepath := filepath.Join(ge.OutputDir, filename)
@@ -366,4 +366,22 @@ func (ge *GroupExtractor) SaveResults(groups map[string][]string) error {
 	}
 
 	return nil
+}
+
+func safeGroupFilename(name string) string {
+	name = strings.ToLower(name)
+	var b strings.Builder
+	lastUnderscore := false
+	for _, r := range name {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			b.WriteRune(r)
+			lastUnderscore = false
+			continue
+		}
+		if !lastUnderscore {
+			b.WriteByte('_')
+			lastUnderscore = true
+		}
+	}
+	return strings.Trim(b.String(), "_")
 }

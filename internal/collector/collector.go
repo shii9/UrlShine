@@ -224,8 +224,14 @@ func runCmd(args ...string) ([]string, error) {
 			lines = append(lines, l)
 		}
 	}
-	_ = cmd.Wait()
-	return lines, sc.Err()
+	if err := sc.Err(); err != nil {
+		_ = cmd.Wait()
+		return lines, err
+	}
+	if err := cmd.Wait(); err != nil {
+		return lines, err
+	}
+	return lines, nil
 }
 
 func runCmdStdin(input string, args ...string) ([]string, error) {
@@ -248,8 +254,14 @@ func runCmdStdin(input string, args ...string) ([]string, error) {
 			lines = append(lines, l)
 		}
 	}
-	_ = cmd.Wait()
-	return lines, sc.Err()
+	if err := sc.Err(); err != nil {
+		_ = cmd.Wait()
+		return lines, err
+	}
+	if err := cmd.Wait(); err != nil {
+		return lines, err
+	}
+	return lines, nil
 }
 
 func ensureHTTPS(target string) string {

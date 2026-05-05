@@ -18,7 +18,19 @@ import (
 	"urlshine/internal/utils"
 )
 
-// RunProfessional executes the professional pipeline with domain-specific folders.
+var toolOutputNames = map[string]string{
+	"gau":          "gau.txt",
+	"gospider":     "gospider.txt",
+	"katana":       "katana.txt",
+	"waymore":      "waymore.txt",
+	"waybackurls":  "waybackurls.txt",
+	"hakrawler":    "hakrawler.txt",
+	"xnLinkFinder": "xnlinkfinder.txt",
+	"gobuster":     "gobuster.txt",
+	"dirb":         "dirb.txt",
+}
+
+// RunProfessional executes collection and, when requested, the complete processing pipeline.
 func RunProfessional(opts Options) error {
 	start := time.Now()
 	logger.SetVerbose(opts.Verbose)
@@ -27,11 +39,8 @@ func RunProfessional(opts Options) error {
 		return fmt.Errorf("create output dir: %w", err)
 	}
 
-	logger.Info("📁 CREATING DOMAIN-SPECIFIC FOLDERS")
-	logger.Info("────────────────────────────────────")
-
-	// Create folders for each target
-	targetDirs := make(map[string]string)
+	logger.Info("Creating domain-specific folders")
+	targetDirs := make(map[string]string, len(opts.Targets))
 	for _, target := range opts.Targets {
 		folderName := sanitizeDomainName(target) + "_url"
 		targetDir := filepath.Join(opts.OutputDir, folderName)
@@ -39,17 +48,9 @@ func RunProfessional(opts Options) error {
 			return fmt.Errorf("create target dir: %w", err)
 		}
 		targetDirs[target] = targetDir
-		logger.Success("✓ %s/", folderName)
+		logger.Success("%s/", folderName)
 	}
 
-	logger.Info("")
-	logger.Info("🚀 PHASE 1: COLLECTING URLs FROM ALL TOOLS")
-	logger.Info("────────────────────────────────────────────")
-	logger.Info("Configuration: %d threads | Depth: %d | All Tools: %v",
-		opts.Threads, opts.Depth, opts.RunAll)
-	logger.Info("")
-
-	// Configuration
 	cfg := collector.Config{
 		Threads:         opts.Threads,
 		Depth:           opts.Depth,
@@ -66,21 +67,38 @@ func RunProfessional(opts Options) error {
 		RunDirb:         opts.RunDirb,
 	}
 
-	// Use collector.RunAll() to collect from all targets
-	if !opts.SkipCollect {
-		rawDir := filepath.Join(opts.OutputDir, "raw")
-		_, err := collector.RunAll(opts.Targets, rawDir, cfg)
-		if err != nil {
-			logger.Error("collection error: %v", err)
-		}
+	logger.Info("")
+	logger.Info("Phase 1: URL collection")
+	logger.Info("Configuration: %d threads | depth %d | all tools %v | complete %v",
+		opts.Threads, opts.Depth, opts.RunAll, opts.RunComplete)
 
-		// Organize collected URLs by tool into domain-specific folders
-		organizeToolResults(opts.OutputDir, targetDirs)
+	rawDir := filepath.Join(opts.OutputDir, "raw")
+	if !opts.SkipCollect {
+		if _, err := collector.RunAll(opts.Targets, rawDir, cfg); err != nil {
+			logger.Warn("collection error: %v", err)
+		}
+	} else {
+		logger.Skip("collection skipped; using existing per-tool or raw files")
+	}
+
+	copied, err := organizeToolResults(rawDir, targetDirs)
+	if err != nil {
+		logger.Warn("organizing raw tool results failed: %v", err)
+	}
+	if copied > 0 {
+		logger.Success("organized %d per-tool result files", copied)
+	}
+
+	if !opts.RunComplete {
+		logger.Info("")
+		logger.Success("Collection complete")
+		logger.Info("Use -complete to merge, normalize, categorize, report, and verify live URLs.")
+		printOutputSummary(opts, start, false)
+		return nil
 	}
 
 	logger.Info("")
-	logger.Info("📊 PHASE 2: PER-DOMAIN PROCESSING")
-	logger.Info("────────────────────────────────────────────")
+	logger.Info("Phase 2: Complete processing pipeline")
 
 	stats := reporter.Stats{
 		Targets:     opts.Targets,
@@ -88,86 +106,94 @@ func RunProfessional(opts Options) error {
 		Groups:      make(map[string]int),
 		AliveGroups: make(map[string]int),
 	}
+	paramKeys := make(map[string]struct{})
 
-	// Process each domain folder
 	for idx, target := range opts.Targets {
-		logger.Info("")
-		logger.Info("[%d/%d] Processing %s", idx+1, len(opts.Targets), sanitizeDomainName(target)+"_url")
-		logger.Info("────────────────────────────────────────────")
-
 		targetDir := targetDirs[target]
+		logger.Info("")
+		logger.Info("[%d/%d] Processing %s", idx+1, len(opts.Targets), filepath.Base(targetDir))
 
-		// Step 1: Merge tool files
-		logger.Step(1, 4, "Merging URLs from all tools")
+		logger.Step(1, 4, "Merging and deduplicating")
 		mergedFile := filepath.Join(targetDir, "merged_urls.txt")
-		totalMerged := mergeToolsForTarget(targetDir, mergedFile)
-		logger.Success("✓ Merged: %s URLs", utils.FormatN(totalMerged))
+		totalMerged, err := mergeToolsForTarget(targetDir, mergedFile)
+		if err != nil {
+			return fmt.Errorf("merge %s: %w", target, err)
+		}
+		stats.TotalRaw += totalMerged
+		logger.Success("Merged: %s URLs", utils.FormatN(totalMerged))
 
-		// Step 2: Normalize
 		logger.Step(2, 4, "Normalizing URLs")
 		normFile := filepath.Join(targetDir, "normalized_urls.txt")
-		in, out, _ := normalizer.NormalizeFile(mergedFile, normFile)
-		if in > 0 {
-			reduction := float64((in - out)) / float64(in) * 100
-			logger.Success("✓ Normalized: %s URLs (%.1f%% reduction)", utils.FormatN(out), reduction)
-		} else {
-			logger.Success("✓ Normalized: %s URLs", utils.FormatN(out))
+		in, out, err := normalizer.NormalizeFile(mergedFile, normFile)
+		if err != nil {
+			return fmt.Errorf("normalize %s: %w", target, err)
+		}
+		stats.AfterNorm += out
+		logger.Success("Normalized: %s URLs (%.1f%% reduction)", utils.FormatN(out), utils.Reduction(in, out))
+
+		logger.Step(3, 4, "Categorizing attack groups")
+		lines, err := utils.ReadLines(normFile)
+		if err != nil {
+			return fmt.Errorf("read normalized urls for %s: %w", target, err)
 		}
 
-		// Step 3: Advanced Extraction
-		logger.Step(3, 4, "Advanced URL Extraction with Specialized Tools")
-		logger.Info("")
-
-		lines, _ := utils.ReadLines(normFile)
-
-		// Run advanced extractor for specialized groups
 		extr := extractor.NewGroupExtractor(lines, targetDir)
 		extractedGroups := extr.ExtractAll()
+		if err := extr.SaveResults(extractedGroups); err != nil {
+			logger.Warn("saving extracted groups failed: %v", err)
+		}
 
-		// Save extracted groups to files
-		logger.Info("")
-		logger.Info("  💾 Saving specialized groups:")
-		extr.SaveResults(extractedGroups)
-
-		// Also run standard splitter for additional categorization
-		logger.Info("")
-		logger.Info("  📊 Running standard categorization:")
 		groups := splitter.Split(lines)
-		_, err := splitter.WriteGroups(groups, targetDir)
-		if err != nil {
-			logger.Warn("failed to write groups: %v", err)
+		if _, err := splitter.WriteGroups(groups, targetDir); err != nil {
+			logger.Warn("failed to write categorized groups: %v", err)
+		}
+		for _, key := range splitter.ParamKeys(groups.Params) {
+			paramKeys[key] = struct{}{}
 		}
 
-		counts := splitter.Counts(groups)
-		for _, groupName := range []string{"api_urls", "auth_admin_urls", "params_urls", "js_config_urls", "directories_urls"} {
-			if count, ok := counts[groupName]; ok && count > 0 {
-				displayName := strings.ReplaceAll(groupName, "_", " ")
-				logger.Success("  ✓ %-20s: %s URLs", displayName, utils.FormatN(count))
-				stats.Groups[groupName] = count
-			}
+		for _, groupName := range []string{
+			splitter.GroupAPI,
+			splitter.GroupAuth,
+			splitter.GroupParams,
+			splitter.GroupJS,
+			splitter.GroupDirs,
+		} {
+			count := splitter.Counts(groups)[groupName]
+			stats.Groups[groupName] += count
+			logger.Success("%-20s %s URLs", strings.ReplaceAll(groupName, "_", " "), utils.FormatN(count))
 		}
 
-		// Step 4: Optional alive check
 		if !opts.SkipAlive {
-			logger.Step(4, 4, "Verifying live URLs")
+			logger.Step(4, 4, "Alive checking")
 			aliveFile := filepath.Join(targetDir, "alive_urls.txt")
 			if _, err := alive.ProbeFile(normFile, aliveFile, opts.Threads); err != nil {
 				logger.Warn("alive check failed: %v", err)
 			} else {
 				aliveCount := utils.FileLineCount(aliveFile)
-				logger.Success("✓ Live URLs: %s", utils.FormatN(aliveCount))
-				stats.AliveGroups["verified"] = aliveCount
+				stats.AliveGroups["verified"] += aliveCount
+				logger.Success("Live URLs: %s", utils.FormatN(aliveCount))
 			}
 		} else {
 			logger.Skip("alive verification skipped")
 		}
+	}
 
-		logger.Info("")
+	stats.UniqueParams = len(paramKeys)
+	stats.DurationSec = time.Since(start).Seconds()
+	if err := reporter.WriteReports(stats); err != nil {
+		logger.Warn("failed to write reports: %v", err)
+	} else {
+		logger.Success("JSON and Markdown reports generated")
 	}
 
 	logger.Info("")
-	logger.Info("✅ COMPLETE")
-	logger.Info("────────────────────────────────────────────")
+	logger.Success("Complete pipeline finished")
+	printOutputSummary(opts, start, true)
+	return nil
+}
+
+func printOutputSummary(opts Options, start time.Time, complete bool) {
+	logger.Info("")
 	logger.Info("Results saved to:")
 	if len(opts.Targets) == 1 {
 		logger.Success("  %s/", sanitizeDomainName(opts.Targets[0])+"_url")
@@ -176,112 +202,102 @@ func RunProfessional(opts Options) error {
 	}
 
 	logger.Info("")
-	logger.Info("📁 FILES GENERATED (per domain):")
-	logger.Info("────────────────────────────────────────────")
-	logger.Info("  Per-Tool Results:")
-	logger.Info("    • gau.txt                 - GAU tool URLs")
-	logger.Info("    • katana.txt              - Katana crawler URLs")
-	logger.Info("    • gospider.txt            - GoSpider URLs")
-	logger.Info("    • waymore.txt             - Waymore URLs")
-	logger.Info("    • waybackurls.txt         - Wayback URLs")
-	logger.Info("    • hakrawler.txt           - Hakrawler URLs")
-	logger.Info("    • xnlinkfinder.txt        - xnLinkFinder URLs")
-	logger.Info("    • gobuster.txt            - Gobuster directory discovery")
-	logger.Info("    • dirb.txt                - Dirb directory brute-force")
-	logger.Info("")
-	logger.Info("  Processed Results:")
-	logger.Info("    • merged_urls.txt         - All URLs combined")
-	logger.Info("    • normalized_urls.txt     - Cleaned & deduplicated")
-	logger.Info("    • api_urls.txt            - API endpoints")
-	logger.Info("    • auth_admin_urls.txt     - Auth & admin pages")
-	logger.Info("    • params_urls.txt         - URLs with parameters")
-	logger.Info("    • js_config_urls.txt      - JS & config files")
-	logger.Info("    • directories_urls.txt    - Directory paths")
-	if !opts.SkipAlive {
-		logger.Info("    • alive_urls.txt          - Verified live URLs")
+	logger.Info("Files generated per domain:")
+	logger.Info("  Per-tool results: gau.txt, katana.txt, gospider.txt, waymore.txt, waybackurls.txt")
+	logger.Info("                    hakrawler.txt, xnlinkfinder.txt, gobuster.txt, dirb.txt")
+	if complete {
+		logger.Info("  Complete outputs: merged_urls.txt, normalized_urls.txt, api_urls.txt")
+		logger.Info("                    auth_admin_urls.txt, params_urls.txt, js_config_urls.txt")
+		logger.Info("                    directories_urls.txt")
+		if !opts.SkipAlive {
+			logger.Info("                    alive_urls.txt")
+		}
+		logger.Info("  Reports:          urlshine_report.json, urlshine_report.md")
 	}
-
+	logger.Success("Total time: %s", formatDuration(time.Since(start)))
 	logger.Info("")
-	dur := time.Since(start)
-	logger.Success("Total time: %s", formatDuration(dur))
-	logger.Info("")
-
-	return nil
 }
 
-// organizeToolResults moves tool results from raw/ to domain-specific folders
-func organizeToolResults(outputDir string, targetDirs map[string]string) {
-	rawDir := filepath.Join(outputDir, "raw")
+func organizeToolResults(rawDir string, targetDirs map[string]string) (int, error) {
 	if _, err := os.Stat(rawDir); os.IsNotExist(err) {
-		return // raw dir doesn't exist
+		return 0, nil
 	}
 
-	// Read raw directory
-	entries, err := os.ReadDir(rawDir)
-	if err != nil {
-		return
-	}
-
-	// For each target domain, organize its tool files
+	copied := 0
 	for target, targetDir := range targetDirs {
-		sanitized := sanitizeDomainName(target)
+		targetPart := utils.SanitizeFilename(target)
+		legacyTargetPart := sanitizeDomainName(target)
 
-		for _, entry := range entries {
-			if entry.IsDir() {
-				continue
+		for toolName, dstName := range toolOutputNames {
+			candidates := []string{
+				filepath.Join(rawDir, toolName+"_"+targetPart+".txt"),
+				filepath.Join(rawDir, legacyTargetPart+"-"+dstName),
 			}
 
-			name := entry.Name()
-			// Look for files named like: google.com-gau.txt, google.com-katana.txt, etc.
-			if strings.HasPrefix(name, sanitized+"-") {
-				toolName := strings.TrimPrefix(name, sanitized+"-")
-				srcPath := filepath.Join(rawDir, name)
-				dstPath := filepath.Join(targetDir, toolName)
-
-				// Copy file
-				data, _ := os.ReadFile(srcPath)
-				os.WriteFile(dstPath, data, 0644)
+			for _, srcPath := range candidates {
+				if !utils.FileExists(srcPath) {
+					continue
+				}
+				data, err := os.ReadFile(srcPath)
+				if err != nil {
+					return copied, err
+				}
+				if err := os.WriteFile(filepath.Join(targetDir, dstName), data, 0644); err != nil {
+					return copied, err
+				}
+				copied++
+				break
 			}
 		}
 	}
+	return copied, nil
 }
 
-// mergeToolsForTarget merges all tool files for a single target.
-func mergeToolsForTarget(targetDir, outFile string) int {
-	tools := []string{"gau.txt", "katana.txt", "gospider.txt", "waymore.txt", "waybackurls.txt", "hakrawler.txt", "xnlinkfinder.txt", "gobuster.txt", "dirb.txt"}
+func mergeToolsForTarget(targetDir, outFile string) (int, error) {
+	tools := []string{
+		"gau.txt",
+		"katana.txt",
+		"gospider.txt",
+		"waymore.txt",
+		"waybackurls.txt",
+		"hakrawler.txt",
+		"xnlinkfinder.txt",
+		"gobuster.txt",
+		"dirb.txt",
+	}
 	seen := make(map[string]struct{})
 	var merged []string
 
 	for _, tool := range tools {
 		toolPath := filepath.Join(targetDir, tool)
-		if _, err := os.Stat(toolPath); os.IsNotExist(err) {
-			continue // Skip if file doesn't exist
+		if !utils.FileExists(toolPath) {
+			continue
 		}
 
 		lines, err := utils.ReadLines(toolPath)
 		if err != nil {
-			continue
+			return 0, err
 		}
-
 		for _, line := range lines {
 			line = strings.TrimSpace(line)
 			if line == "" {
 				continue
 			}
-			if _, ok := seen[line]; !ok {
-				seen[line] = struct{}{}
-				merged = append(merged, line)
+			if _, ok := seen[line]; ok {
+				continue
 			}
+			seen[line] = struct{}{}
+			merged = append(merged, line)
 		}
 	}
 
-	utils.WriteLines(outFile, merged)
-	return len(merged)
+	if err := utils.WriteLines(outFile, merged); err != nil {
+		return 0, err
+	}
+	return len(merged), nil
 }
 
-// sanitizeDomainName converts a domain to a safe folder name
 func sanitizeDomainName(domain string) string {
-	// Replace dots and special chars with underscores, lowercase
 	replacer := strings.NewReplacer(
 		".", "_",
 		"/", "_",
@@ -294,12 +310,9 @@ func sanitizeDomainName(domain string) string {
 		"|", "_",
 	)
 	name := strings.ToLower(replacer.Replace(domain))
-	// Remove leading/trailing underscores
-	name = strings.Trim(name, "_")
-	return name
+	return strings.Trim(name, "_")
 }
 
-// formatDuration formats a duration in human-readable format
 func formatDuration(d time.Duration) string {
 	if d.Seconds() < 60 {
 		return fmt.Sprintf("%.1fs", d.Seconds())

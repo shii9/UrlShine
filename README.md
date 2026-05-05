@@ -81,23 +81,23 @@ go build -o urlshine.exe .
 ## 🚀 Quick Start
 
 ```bash
-# Enumerate single domain (auto-runs all 9 tools + gobuster + dirb)
-urlshine google.com
-
-# Specific tools only
+# Collect URLs only (no post-processing)
 urlshine -gau -katana google.com
 
-# All tools with aggressive settings
-urlshine -all -t 100 -d 5 google.com
+# Collect URLs + complete processing pipeline
+urlshine -gau -katana -complete google.com
 
-# Process file with multiple targets
-urlshine -f targets.txt -all -t 150 -d 3
+# All 9 tools + full pipeline
+urlshine -all -complete -t 100 -d 5 google.com
 
-# Combine specific tools with -all for additional discovery
-urlshine -gau -katana -all -t 100 -v google.com
+# Process file with all tools + complete processing
+urlshine -f targets.txt -all -complete -t 150 -d 3
 
-# Fast mode (skip alive checking)
-urlshine -all -no-alive google.com
+# Collection only (fast)
+urlshine -all google.com
+
+# Collection + processing, skip alive check
+urlshine -all -complete -no-alive google.com
 
 # Professional output with custom directory
 urlshine -all -t 100 -d 5 -o ./reports google.com
@@ -174,7 +174,9 @@ When using the `--all` flag, URLShine executes a comprehensive 5-step reconnaiss
 
 **Processing & Control:**
 ```
-  -no-alive              Skip live host verification (fast mode)
+  -complete              Run full post-processing pipeline (merge, normalize, 
+                         categorize, extract, and alive checking)
+  -no-alive              Skip live host verification (disable during -complete)
   -skip-collect          Reprocess existing data (skip collection)
   -v, --verbose          Debug/verbose logging output
   -h, --help             Display help menu
@@ -184,67 +186,116 @@ When using the `--all` flag, URLShine executes a comprehensive 5-step reconnaiss
 
 **Basic Usage:**
 ```bash
-# Single domain - auto-runs all 9 tools
-urlshine google.com
+# Collect URLs only (no post-processing)
+urlshine -gau -katana google.com
 
-# Multiple domains
-urlshine google.com yahoo.com facebook.com
-
-# Show help
-urlshine --help
+# Collect URLs + complete processing (merge, normalize, categorize, alive check)
+urlshine -gau -katana -complete google.com
 ```
 
 **Selective Tool Usage:**
 ```bash
-# Specific tools only
+# Specific tools only (collection mode)
 urlshine -gau -katana google.com
 
-# Add directory discovery
-urlshine -katana -gobuster -dirb google.com
+# Specific tools + complete pipeline
+urlshine -katana -gobuster -dirb -complete google.com
 
-# Combine multiple sources
-urlshine -gau -katana -gospider -t 50 google.com
+# Multiple sources with complete processing
+urlshine -gau -katana -gospider -complete -t 50 google.com
 ```
 
 **Professional Reconnaissance:**
 ```bash
-# All tools with aggressive settings (includes gobuster + dirb by default)
+# All tools (collection only - fast)
 urlshine -all -t 100 -d 5 google.com
 
-# Large batch processing
-urlshine -f targets.txt -all -t 150 -d 2 -o ./results
+# All tools + full processing pipeline
+urlshine -all -complete -t 100 -d 5 google.com
 
-# Fast mode without alive checking
-urlshine -all -no-alive -t 100 google.com
+# Large batch with complete processing
+urlshine -f targets.txt -all -complete -t 150 -d 2 -o ./results
+
+# Complete mode without alive checking
+urlshine -all -complete -no-alive -t 100 google.com
 
 # Verbose output for debugging
-urlshine -all -t 100 -v google.com
+urlshine -all -complete -t 100 -v google.com
 ```
 
 **Advanced Scenarios:**
 ```bash
-# Combine -all with individual tools (tools won't duplicate)
-urlshine -all -gau -t 100 google.com
+# Combine collection tools + complete processing
+urlshine -gau -katana -gobuster -complete -t 100 google.com
 
-# All tools + full verbosity + custom output
-urlshine -all -t 100 -d 5 -o ./enterprise_scan -v google.com
+# All tools + full processing + custom output
+urlshine -all -complete -t 100 -d 5 -o ./enterprise_scan -v google.com
 
 # Reprocess existing results with different settings
 urlshine -skip-collect -no-alive google.com
 
-# Batch with deep crawling and custom threads
-urlshine -f massive-targets.txt -all -t 150 -d 3 -o ./batch_results -v
+# Batch with deep crawling and complete processing
+urlshine -f massive-targets.txt -all -complete -t 150 -d 3 -o ./batch_results -v
 ```
+
+### Collection vs Complete Processing
+
+**Collection Only Mode** (default, without `-complete`):
+- ✅ Runs selected URL collection tools
+- ✅ Saves per-tool result files (gau.txt, katana.txt, etc.)
+- ⏱️ **Fast**: Ideal for quick enumeration, recon, or large-scale collection
+- 💾 **Output**: `{domain}_url/` folder with per-tool files
+
+**Complete Pipeline Mode** (with `-complete`):
+- ✅ Collects URLs (same as above)
+- ✅ **Merges** all tool outputs into single file
+- ✅ **Normalizes** & deduplicates URLs (removes ports, schemes, junk)
+- ✅ **Categorizes** into 5 attack groups:
+  - API endpoints
+  - Auth & admin pages
+  - URLs with parameters
+  - JavaScript & config files
+  - Directory paths
+- ✅ **Advanced extraction** with specialized tools
+- ✅ **Live verification** with httpx (optional, disable with `-no-alive`)
+- ✅ **Professional reports** (HTML & JSON)
+- 💾 **Output**: Per-tool files + merged + normalized + categorized files + reports
 
 ### About the `-all` Flag
 
-When you use `-all`, URLShine automatically:
-- ✅ Runs all 9 URL collection tools (GAU, Katana, GoSpider, Waymore, Waybackurls, Hakrawler, xnLinkFinder)
-- ✅ Includes Gobuster for aggressive directory discovery
-- ✅ Includes Dirb for directory brute-forcing
-- ✅ Performs full URL normalization and deduplication
-- ✅ Advanced extraction for API endpoints, Auth pages, Parameters, JS/Config, Directories
-- ✅ Optional: Live host verification (disable with `-no-alive`)
+When you use `-all`, URLShine automatically runs:
+- ✅ All 9 URL collection tools (GAU, Katana, GoSpider, Waymore, Waybackurls, Hakrawler, xnLinkFinder, Gobuster, Dirb)
+- ✅ Parallel execution with 10 concurrent tool executors (50 threads per tool by default)
+- ✅ Aggressive parameters: depth 5, 50 threads, multiple concurrent sources
+
+**Use `-complete` with `-all`** to get the full processing pipeline:
+```bash
+urlshine -all -complete google.com
+```
+
+### About the `-complete` Flag
+
+The `-complete` flag enables the full post-processing pipeline:
+1. **Merge** - Combine outputs from all collection tools
+2. **Normalize** - Deduplicate URLs, clean schemes & ports
+3. **Categorize** - Extract into 5 specialized attack groups
+4. **Advanced Extraction** - Use specialized tools for each category
+5. **Live Verification** - Check which URLs are live (httpx)
+6. **Professional Reports** - Generate HTML & JSON summaries
+
+**Without `-complete`** (Collection mode):
+```bash
+urlshine -all google.com                    # Only collect URLs
+urlshine -gau -katana google.com            # Collect with specific tools
+```
+
+**With `-complete`** (Full pipeline):
+```bash
+urlshine -all -complete google.com          # Collect + process all
+urlshine -gau -katana -complete google.com  # Collect specific tools + process
+```
+
+The `-complete` flag works with any combination of collection tools!
 
 **Example with combinations:**
 ```bash
