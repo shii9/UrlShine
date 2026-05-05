@@ -1,8 +1,6 @@
 <div align="center">
 
-  <img src="https://raw.githubusercontent.com/shii9/NetRange/main/assets/banner.png" alt="URLShine Banner" width="800" onerror="this.style.display='none'"/>
-
-  <h1>URLShine v2.0.0</h1>
+  <h1>🔗 URLShine v2.0.0</h1>
   <p><b>Advanced URL Enumeration & Attack Surface Mapper</b></p>
   <p>Professional reconnaissance engine for bug bounty hunters and red teams. Automates aggressive URL extraction from 9 concurrent tools, with deduplication, categorization, and live host verification.</p>
 
