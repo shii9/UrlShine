@@ -93,8 +93,59 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
+	// Normalize flags: convert -all to --all, -complete to --complete, etc.
+	// This allows users to use -all and --all interchangeably
+	normalizeFlags()
+
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
+	}
+}
+
+// normalizeFlags converts single-dash long flags (-all, -complete, -gau, etc.) to double-dash (--all, --complete, --gau)
+// This provides a better UX by accepting both formats
+func normalizeFlags() {
+	// Map of known long flag names that users might try with single dash
+	longFlagNames := map[string]bool{
+		"all":          true,
+		"complete":     true,
+		"gau":          true,
+		"katana":       true,
+		"gospider":     true,
+		"waymore":      true,
+		"waybackurls":  true,
+		"hakrawler":    true,
+		"xnlinkfinder": true,
+		"gobuster":     true,
+		"dirb":         true,
+		"file":         true,
+		"output":       true,
+		"threads":      true,
+		"depth":        true,
+		"subs":         true,
+		"verbose":      true,
+		"no-alive":     true,
+		"skip-collect": true,
+	}
+
+	for i, arg := range os.Args {
+		// Check if it's a single-dash flag (starts with - but not --)
+		if strings.HasPrefix(arg, "-") && !strings.HasPrefix(arg, "--") {
+			// Extract flag name (everything after the dash until = or end)
+			flagPart := arg[1:] // Remove leading -
+			var flagName string
+			if strings.Contains(flagPart, "=") {
+				flagName = strings.Split(flagPart, "=")[0]
+			} else {
+				flagName = flagPart
+			}
+
+			// Check if this is a known long flag name
+			if longFlagNames[flagName] {
+				// Convert -flagname to --flagname
+				os.Args[i] = "--" + flagPart
+			}
+		}
 	}
 }
 
@@ -107,58 +158,65 @@ Professional URL Enumeration and Attack Surface Mapper
 USAGE
   urlshine [target ...] [flags]
 
-⚠️  IMPORTANT: FLAG FORMAT
-  Double dash (--) for long flags:    urlshine --all --complete google.com
-  Single dash (-) for short flags:    urlshine -a -c google.com
-  ❌ DO NOT use single dash with long names: -all or -complete (use --all or -a)
+✅ FLEXIBLE FLAG FORMAT
+  You can use ANY of these formats (all work the same):
+  
+  Long flags (double dash):
+    urlshine --all --complete google.com
+    
+  Short flags (single dash with letter):
+    urlshine -a -c google.com
+    
+  Long flags (single dash):
+    urlshine -all -complete google.com
+    
+  Mixed formats:
+    urlshine -a --complete google.com
+    urlshine --gau -katana -c google.com
 
 FLAGS EXPLAINED
-  --all, -a       Use all 9 tools (GAU, Katana, GoSpider, Waymore, Waybackurls, 
-                  Hakrawler, xnLinkFinder, Gobuster, Dirb)
-  --complete, -c  Complete all processing steps:
-                  • Merging — Deduplicates all results
-                  • Normalization — Cleans URLs
-                  • Categorization — Splits into 5 attack groups
-                  • Alive Checking — Verifies live hosts (unless --no-alive)
+  --all, -a, -all         Use all 9 tools (GAU, Katana, GoSpider, Waymore, Waybackurls, 
+                          Hakrawler, xnLinkFinder, Gobuster, Dirb)
+  --complete, -c, -complete  Complete all processing steps:
+                            • Merging — Deduplicates all results
+                            • Normalization — Cleans URLs
+                            • Categorization — Splits into 5 attack groups
+                            • Alive Checking — Verifies live hosts (unless --no-alive or -no-alive)
 
-COLLECTION TOOLS (use -- or - prefix)
-  --gau, -g           GetAllUrls - archive & passive sources
-  --katana, -k        Katana - active JS crawler
-  --gospider, -w      GoSpider - HTML & JS crawler
-  --waymore, -m       Waymore - advanced wayback scraper
-  --waybackurls, -b   Wayback URLs - wayback machine scraper
-  --hakrawler, -r     Hakrawler - HTML content crawler
-  --xnlinkfinder, -x  xnLinkFinder - JS endpoint extractor
-  --gobuster, -u      Gobuster - directory brute-force discovery
-  --dirb, -i          Dirb - directory enumeration
+COLLECTION TOOLS (use any format)
+  --gau, -g, -gau              GetAllUrls - archive & passive sources
+  --katana, -k, -katana        Katana - active JS crawler
+  --gospider, -w, -gospider    GoSpider - HTML & JS crawler
+  --waymore, -m, -waymore      Waymore - advanced wayback scraper
+  --waybackurls, -b, -waybackurls  Wayback URLs - wayback machine scraper
+  --hakrawler, -r, -hakrawler  Hakrawler - HTML content crawler
+  --xnlinkfinder, -x, -xnlinkfinder  xnLinkFinder - JS endpoint extractor
+  --gobuster, -u, -gobuster    Gobuster - directory brute-force discovery
+  --dirb, -i, -dirb            Dirb - directory enumeration
 
 EXAMPLES
-  Long form (double dash):
-    urlshine --gau --katana google.com
+  All of these work:
+    urlshine -all -complete google.com
     urlshine --all --complete google.com
-    urlshine --all --complete -t 100 -d 5 google.com
-
-  Short form (single dash):
-    urlshine -g -k google.com
     urlshine -a -c google.com
-    urlshine -a -c -t 100 -d 5 google.com
-
-  Mixed (both long and short):
-    urlshine --gau -k -c google.com
-    urlshine -a --complete -t 100 google.com
+    urlshine -gau -katana google.com
+    urlshine --gau --katana google.com
+    urlshine -g -k google.com
+    urlshine -f targets.txt -a -c -t 100 google.com
+    urlshine --file targets.txt --all --complete --threads 100 google.com
 
 OPTIONS
-  -t, --threads INT        Parallel threads for tools and probing (default: 50)
-  -d, --depth INT          Crawl depth for active tools (default: 5)
-  -o, --output DIR         Output directory (default: urlshine_<timestamp>)
-  -f, --file FILE          Input file with targets (one per line)
-  -s, --subs               Include subdomains when supported (default: true)
-  -v, --verbose            Debug/verbose logging
-  --no-alive               Skip live host verification
-  --skip-collect           Skip collection and process existing files
+  -t, --threads, -threads      Parallel threads for tools and probing (default: 50)
+  -d, --depth, -depth          Crawl depth for active tools (default: 5)
+  -o, --output, -output        Output directory (default: urlshine_<timestamp>)
+  -f, --file, -file            Input file with targets (one per line)
+  -s, --subs, -subs            Include subdomains when supported (default: true)
+  -v, --verbose, -verbose      Debug/verbose logging
+  --no-alive, -no-alive        Skip live host verification
+  --skip-collect, -skip-collect   Skip collection and process existing files
 
 OUTPUT STRUCTURE
-  Without --complete (or -c):
+  Without --complete or -complete or -c:
     {domain}_url/
     ├── gau.txt
     ├── katana.txt
@@ -170,7 +228,7 @@ OUTPUT STRUCTURE
     ├── gobuster.txt
     └── dirb.txt
 
-  With --complete (or -c):
+  With --complete or -complete or -c:
     {domain}_url/
     ├── merged_urls.txt (all tools combined)
     ├── normalized_urls.txt (cleaned & deduplicated)

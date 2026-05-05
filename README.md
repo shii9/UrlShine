@@ -71,27 +71,44 @@ All tools are optional. URLShine gracefully skips tools that aren't installed.
 
 ## 🚀 Quick Start
 
-### ⚠️ Flag Format (Important!)
-- **Long flags**: Double dash `--` → `--all`, `--complete`
-- **Short flags**: Single dash `-` → `-a`, `-c`
-- **❌ Wrong**: Never use single dash with long names → `-all`, `-complete`
+### ✅ Flexible Flag Format
+All of these formats work perfectly (choose whichever you prefer):
+
+```bash
+# Format 1: Long flags with double dash
+urlshine --all --complete google.com
+
+# Format 2: Short flags with single dash (letters)
+urlshine -a -c google.com
+
+# Format 3: Long flags with single dash (NEW!)
+urlshine -all -complete google.com
+
+# Format 4: Mix and match
+urlshine --gau -katana -c google.com
+urlshine -a --complete google.com
+```
 
 ### Examples
 
-**Collect URLs only:**
+**Collect URLs only (any format works):**
 ```bash
-# Long form
 urlshine --gau --katana google.com
-urlshine --all google.com
-
-# Short form
+urlshine -gau -katana google.com
 urlshine -g -k google.com
+urlshine --all google.com
+urlshine -all google.com
 urlshine -a google.com
 ```
 
-**Collect + Complete processing:**
+**Collect + Complete processing (any format works):**
 ```bash
+# All of these are equivalent:
+urlshine --all --complete google.com
+urlshine -all -complete google.com
 urlshine -a -c google.com
+urlshine --gau --katana --complete google.com
+urlshine -gau -katana -complete google.com
 urlshine -g -k -c google.com
 urlshine -a -c -t 100 -d 5 google.com
 ```
