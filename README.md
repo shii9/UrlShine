@@ -71,17 +71,17 @@ All tools are optional. URLShine gracefully skips tools that aren't installed.
 
 ## 🚀 Quick Start
 
-### ✅ Flexible Flag Format
-All of these formats work perfectly (choose whichever you prefer):
+### 📌 Flexible Flag Format
 
+All flag formats work perfectly (use what you prefer):
 ```bash
-# Format 1: Long flags with double dash
+# Format 1: Double-dash long flags
 urlshine --all --complete google.com
 
-# Format 2: Short flags with single dash (letters)
+# Format 2: Single-dash short letters
 urlshine -a -c google.com
 
-# Format 3: Long flags with single dash (NEW!)
+# Format 3: Single-dash long flags
 urlshine -all -complete google.com
 
 # Format 4: Mix and match
@@ -89,137 +89,132 @@ urlshine --gau -katana -c google.com
 urlshine -a --complete google.com
 ```
 
-### Examples
+### 📋 Common Use Cases
 
-**Collect URLs only (any format works):**
+**Collection only:**
 ```bash
+urlshine -a google.com           # All tools
+urlshine -g -k google.com        # GAU + Katana
 urlshine --gau --katana google.com
-urlshine -gau -katana google.com
-urlshine -g -k google.com
-urlshine --all google.com
-urlshine -all google.com
-urlshine -a google.com
 ```
 
-**Collect + Complete processing (any format works):**
+**Full processing pipeline:**
 ```bash
-# All of these are equivalent:
-urlshine --all --complete google.com
-urlshine -all -complete google.com
-urlshine -a -c google.com
-urlshine --gau --katana --complete google.com
-urlshine -gau -katana -complete google.com
-urlshine -g -k -c google.com
-urlshine -a -c -t 100 -d 5 google.com
+urlshine -a -c google.com                 # All tools + complete
+urlshine -g -k -c google.com              # Specific tools + complete
+urlshine -f targets.txt -a -c -t 150 -d 3 # File input with options
 ```
 
-**Process multiple domains from file:**
+**Advanced options:**
 ```bash
-urlshine -f targets.txt -a -c -t 150 -d 3 -o ./results
-```
-
-**Skip live verification:**
-```bash
-urlshine -a -c --no-alive google.com
+urlshine -a -c --no-alive google.com             # Skip alive check
+urlshine -a -c -t 200 -d 5 -o ./results google.com # Custom threads & depth
 ```
 
 ---
 
 ## 💻 CLI Reference
 
-### Main Flags
+### 🎯 Main Flags
 
-| Shorthand | Flag | Type | Default | Description |
-|-----------|------|------|---------|-------------|
-| `-a` | `--all` | boolean | false | Use all 9 collection tools |
-| `-c` | `--complete` | boolean | false | Run complete processing pipeline (merge, normalize, categorize, alive check) |
+| Short | Flag | Type | Default | Description |
+|-------|------|------|---------|-------------|
+| `-a` | `--all` | bool | false | Use all 9 collection tools |
+| `-c` | `--complete` | bool | false | Complete pipeline: merge, normalize, categorize, alive-check |
 | `-f` | `--file` | string | - | Input file with targets (one per line) |
 | `-o` | `--output` | string | urlshine_TIMESTAMP | Output directory |
-| `-t` | `--threads` | integer | 50 | Parallel threads (recommended: 50-200) |
-| `-d` | `--depth` | integer | 5 | Crawl depth for active tools |
-| `-v` | `--verbose` | boolean | false | Debug/verbose logging |
-| `-s` | `--subs` | boolean | true | Include subdomains when supported |
-| | `--no-alive` | boolean | false | Skip live host verification |
-| | `--skip-collect` | boolean | false | Skip collection, reprocess existing data |
+| `-t` | `--threads` | int | 50 | Parallel threads (recommended: 50-200) |
+| `-d` | `--depth` | int | 5 | Crawl depth for active tools |
+| `-v` | `--verbose` | bool | false | Debug/verbose logging |
+| `-s` | `--subs` | bool | true | Include subdomains when supported |
+| - | `--no-alive` | bool | false | Skip live host verification |
+| - | `--skip-collect` | bool | false | Skip collection, reprocess existing data |
 
-### Collection Tools (choose one or more)
+### 🔧 Collection Tools (choose one or more)
 
 | Short | Flag | Tool | Purpose |
 |-------|------|------|---------|
-| `-g` | `--gau` | GetAllUrls | Archive & passive sources |
-| `-k` | `--katana` | Katana | Active JS crawler |
-| `-w` | `--gospider` | GoSpider | HTML & JS crawler |
-| `-m` | `--waymore` | Waymore | Advanced wayback scraper |
-| `-b` | `--waybackurls` | Waybackurls | Wayback machine scraper |
-| `-r` | `--hakrawler` | Hakrawler | HTML content crawler |
-| `-x` | `--xnlinkfinder` | xnLinkFinder | JS endpoint extractor |
-| `-u` | `--gobuster` | Gobuster | Directory brute-force |
-| `-i` | `--dirb` | Dirb | Directory enumeration |
+| `-g` | `--gau` | GetAllUrls | Archive & passive sources (100+ threads) |
+| `-k` | `--katana` | Katana | Active JS crawler with parameter extraction |
+| `-w` | `--gospider` | GoSpider | HTML & JS crawler (sitemaps, robots.txt) |
+| `-m` | `--waymore` | Waymore | Advanced wayback machine scraper |
+| `-b` | `--waybackurls` | Waybackurls | Wayback machine URL extraction |
+| `-r` | `--hakrawler` | Hakrawler | HTML content crawler with custom headers |
+| `-x` | `--xnlinkfinder` | xnLinkFinder | JavaScript link and config extraction |
+| `-u` | `--gobuster` | Gobuster | Directory discovery (50 threads, quiet mode) |
+| `-i` | `--dirb` | Dirb | Directory brute-force (non-recursive) |
 
-### Understanding `-all` vs `-complete`
+### 📚 Mode Overview
 
-**What does `-all` do?**
-```
--all means: Use all 9 collection tools
-```
-- Runs: GAU, Katana, GoSpider, Waymore, Waybackurls, Hakrawler, xnLinkFinder, Gobuster, Dirb
-- Parallel execution with 10 concurrent tool executors (50 threads per tool)
-- Output: Per-tool files (gau.txt, katana.txt, etc.)
+**Collection Only (default):**
+- Flag: None (or just `-g -k`, etc.)
+- Output: Per-tool files in `{domain}_url/`
+- Speed: Fast collection without post-processing
+- Use: Quick enumeration, saving results
 
-**What does `-complete` do?**
-```
--complete means: Complete all processing steps
-```
-1. **Merging** — Deduplicates all results
-2. **Normalization** — Cleans URLs
-3. **Categorization** — Splits into 5 attack groups (API, Auth, Params, JS, Directories)
-4. **Alive Checking** — Verifies live hosts (unless -no-alive used)
-5. **Reporting** — Generates JSON & HTML reports
+**Complete Pipeline:**
+- Flag: `-complete` or `-c`
+- Steps: Collection → Merge → Normalize → Categorize → Alive-check → Report
+- Output: Merged, categorized, and report files
+- Use: Full reconnaissance with analysis
 
-Output: Merged, normalized, categorized files + reports
+### 🎯 Common Commands
 
-### Example Commands
-
-**Simple collection (fast):**
+**Quick enumeration (collection only):**
 ```bash
-# Specific tools, collection only (long form)
-urlshine --gau --katana google.com
+urlshine -a google.com                    # All 9 tools
+urlshine -g -k -w google.com              # Specific tools
+```
 
-# Specific tools, collection only (short form)
-urlshine -g -k google.com
+**Complete analysis (full pipeline):**
+```bash
+urlshine -a -c google.com                 # All tools + processing
+urlshine -f targets.txt -a -c -t 150      # File input + options
+```
 
-# All tools, collection only (long form)
-urlshine --all google.com
+**Advanced usage:**
+```bash
+urlshine -a -c --no-alive google.com      # Skip alive verification
+urlshine -a -c -t 200 -d 5 google.com     # Custom threads & depth
+urlshine --skip-collect -c google.com     # Reprocess existing data
+```
 
-# All tools, collection only (short form)
+### 📂 Output Examples
+
+**Collection only (9 files):**
+```bash
 urlshine -a google.com
+# Output: google_com_url/
+#   ├── gau.txt
+#   ├── katana.txt
+#   ├── gospider.txt
+#   ├── waymore.txt
+#   ├── waybackurls.txt
+#   ├── hakrawler.txt
+#   ├── xnlinkfinder.txt
+#   ├── gobuster.txt
+#   └── dirb.txt
 ```
 
-**Collection + complete processing:**
+**Complete pipeline (categorized + reports):**
 ```bash
-# Long form with specific tools
-urlshine --gau --katana --complete google.com
-
-# Short form with specific tools  
-urlshine -g -k -c google.com
-
-# Long form with all tools
-urlshine --all --complete google.com
-
-# Short form with all tools
 urlshine -a -c google.com
+# Output: google_com_url/
+#   ├── merged_urls.txt
+#   ├── normalized_urls.txt
+#   ├── api_endpoints.txt
+#   ├── auth_admin_urls.txt
+#   ├── parameters.txt
+#   ├── js_config.txt
+#   ├── directories.txt
+#   ├── alive_urls.txt
+#   ├── report.json
+#   └── report.html
 ```
 
-**Batch processing:**
-```bash
-# Multiple targets from file (short form)
-urlshine -f targets.txt -a -c -t 100 -d 5 -o ./results
+---
 
-# Skip alive check for speed (short form)
-urlshine -f targets.txt -a -c --no-alive -t 150 -d 3
-
-# Verbose mode for debugging (short form)
-urlshine -f targets.txt -a -c -v
+## ✨ Features
 ```
 
 **Reprocessing:**
