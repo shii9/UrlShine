@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"urlshine/internal/runner"
-	"urlshine/internal/utils"
+	"github.com/shii9/UrlShine/internal/runner"
+	"github.com/shii9/UrlShine/internal/utils"
 
 	"github.com/spf13/cobra"
 )

@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"sync"
 
-	"urlshine/internal/logger"
-	"urlshine/internal/utils"
+	"github.com/shii9/UrlShine/internal/logger"
+	"github.com/shii9/UrlShine/internal/utils"
 )
 
 // ToolAggregator tracks and aggregates URLs collected by each tool.

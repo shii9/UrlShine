@@ -1,6 +1,6 @@
 package main
 
-import "urlshine/cmd"
+import "github.com/shii9/UrlShine/cmd"
 
 func main() {
 	cmd.Execute()

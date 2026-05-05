@@ -8,14 +8,14 @@ import (
 	"strings"
 	"time"
 
-	"urlshine/internal/alive"
-	"urlshine/internal/collector"
-	"urlshine/internal/extractor"
-	"urlshine/internal/logger"
-	"urlshine/internal/normalizer"
-	"urlshine/internal/reporter"
-	"urlshine/internal/splitter"
-	"urlshine/internal/utils"
+	"github.com/shii9/UrlShine/internal/alive"
+	"github.com/shii9/UrlShine/internal/collector"
+	"github.com/shii9/UrlShine/internal/extractor"
+	"github.com/shii9/UrlShine/internal/logger"
+	"github.com/shii9/UrlShine/internal/normalizer"
+	"github.com/shii9/UrlShine/internal/reporter"
+	"github.com/shii9/UrlShine/internal/splitter"
+	"github.com/shii9/UrlShine/internal/utils"
 )
 
 var toolOutputNames = map[string]string{

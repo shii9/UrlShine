@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"urlshine/internal/logger"
-	"urlshine/internal/utils"
+	"github.com/shii9/UrlShine/internal/logger"
+	"github.com/shii9/UrlShine/internal/utils"
 )
 
 // MergeDir reads all .txt files from dir, skipping internal temp files,

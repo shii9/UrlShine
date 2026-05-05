@@ -16,8 +16,8 @@ import (
 	"time"
 
 	"github.com/schollz/progressbar/v3"
-	"urlshine/internal/logger"
-	"urlshine/internal/utils"
+	"github.com/shii9/UrlShine/internal/logger"
+	"github.com/shii9/UrlShine/internal/utils"
 )
 
 // Result holds live URL metadata.
@@ -133,7 +133,7 @@ func probeNative(inFile, outFile string, threads int) ([]Result, error) {
 				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 				req, err := http.NewRequestWithContext(ctx, "GET", j.url, nil)
 				if err == nil {
-					req.Header.Set("User-Agent", "Mozilla/5.0 (URLShine/2.0)")
+					req.Header.Set("User-Agent", "Mozilla/5.0 (github.com/shii9/UrlShine/2.0)")
 					resp, err := client.Do(req)
 					if err == nil {
 						resultsCh <- Result{

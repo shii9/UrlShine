@@ -1,4 +1,4 @@
-module urlshine
+module github.com/shii9/UrlShine
 
 go 1.21
 

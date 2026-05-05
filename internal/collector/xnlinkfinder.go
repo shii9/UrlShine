@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"urlshine/internal/utils"
+	"github.com/shii9/UrlShine/internal/utils"
 )
 
 // runXnLinkFinder collects URLs via xnLinkFinder.

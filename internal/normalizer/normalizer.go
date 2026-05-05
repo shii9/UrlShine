@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"urlshine/internal/utils"
+	"github.com/shii9/UrlShine/internal/utils"
 )
 
 var staticExt = map[string]bool{

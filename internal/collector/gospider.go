@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"urlshine/internal/utils"
+	"github.com/shii9/UrlShine/internal/utils"
 )
 
 // runGospider collects URLs via gospider.

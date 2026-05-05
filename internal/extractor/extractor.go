@@ -9,8 +9,8 @@ import (
 	"strings"
 	"sync"
 
-	"urlshine/internal/logger"
-	"urlshine/internal/utils"
+	"github.com/shii9/UrlShine/internal/logger"
+	"github.com/shii9/UrlShine/internal/utils"
 )
 
 // GroupExtractor handles advanced extraction for specialized URL groups.

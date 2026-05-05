@@ -6,14 +6,14 @@ import (
 	"path/filepath"
 	"time"
 
-	"urlshine/internal/alive"
-	"urlshine/internal/collector"
-	"urlshine/internal/logger"
-	"urlshine/internal/merger"
-	"urlshine/internal/normalizer"
-	"urlshine/internal/reporter"
-	"urlshine/internal/splitter"
-	"urlshine/internal/utils"
+	"github.com/shii9/UrlShine/internal/alive"
+	"github.com/shii9/UrlShine/internal/collector"
+	"github.com/shii9/UrlShine/internal/logger"
+	"github.com/shii9/UrlShine/internal/merger"
+	"github.com/shii9/UrlShine/internal/normalizer"
+	"github.com/shii9/UrlShine/internal/reporter"
+	"github.com/shii9/UrlShine/internal/splitter"
+	"github.com/shii9/UrlShine/internal/utils"
 )
 
 // Options configuration for runner.

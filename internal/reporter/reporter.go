@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"urlshine/internal/splitter"
-	"urlshine/internal/utils"
+	"github.com/shii9/UrlShine/internal/splitter"
+	"github.com/shii9/UrlShine/internal/utils"
 
 	"github.com/fatih/color"
 )
