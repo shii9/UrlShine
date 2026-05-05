@@ -46,11 +46,26 @@ go_install "gospider"    "github.com/jaeles-project/gospider@latest"
 go_install "katana"      "github.com/projectdiscovery/katana/cmd/katana@latest"
 go_install "waybackurls" "github.com/tomnomnom/waybackurls@latest"
 go_install "hakrawler"   "github.com/hakluke/hakrawler@latest"
+go_install "gobuster"    "github.com/OJ/gobuster/v3@latest"
 go_install "httpx"       "github.com/projectdiscovery/httpx/cmd/httpx@latest"
 
 section "Python-based tools"
 pip_install "waymore"       "waymore"
 pip_install "xnLinkFinder"  "xnlinkfinder"
+
+section "System tools (dirb)"
+install_dirb() {
+  if command -v dirb &>/dev/null; then skip "dirb"; return; fi
+  info "Installing dirb ..."
+  if command -v apt-get &>/dev/null; then
+    sudo apt-get update && sudo apt-get install -y dirb && ok "dirb" || warn "Failed: dirb"
+  elif command -v brew &>/dev/null; then
+    brew install dirb && ok "dirb" || warn "Failed: dirb"
+  else
+    warn "dirb requires apt or brew. Visit: https://sourceforge.net/projects/dirb/"
+  fi
+}
+install_dirb
 
 section "Building URLShine"
 go mod tidy

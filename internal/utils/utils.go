@@ -21,6 +21,41 @@ func ToolExists(name string) bool {
 	return err == nil
 }
 
+// ToolStatus represents the status of a single tool.
+type ToolStatus struct {
+	Name       string
+	Status     string // "installed", "missing", "optional"
+	InstallCmd string
+	Required   bool
+}
+
+// CheckDependencies verifies all required tools and returns their status.
+func CheckDependencies() []ToolStatus {
+	tools := []ToolStatus{
+		// Go-based tools
+		{Name: "gau", InstallCmd: "go install github.com/lc/gau/v2/cmd/gau@latest", Required: false},
+		{Name: "katana", InstallCmd: "go install github.com/projectdiscovery/katana/cmd/katana@latest", Required: false},
+		{Name: "gospider", InstallCmd: "go install github.com/jaeles-project/gospider@latest", Required: false},
+		{Name: "waymore", InstallCmd: "pip3 install waymore", Required: false},
+		{Name: "waybackurls", InstallCmd: "go install github.com/tomnomnom/waybackurls@latest", Required: false},
+		{Name: "hakrawler", InstallCmd: "go install github.com/hakluke/hakrawler@latest", Required: false},
+		{Name: "xnlinkfinder", InstallCmd: "pip3 install xnlinkfinder", Required: false},
+		{Name: "gobuster", InstallCmd: "go install github.com/OJ/gobuster/v3@latest", Required: false},
+		{Name: "dirb", InstallCmd: "apt-get install dirb (Linux) | brew install dirb (macOS)", Required: false},
+		// Optional but useful
+		{Name: "httpx", InstallCmd: "go install github.com/projectdiscovery/httpx/cmd/httpx@latest", Required: false},
+	}
+
+	for i := range tools {
+		if ToolExists(tools[i].Name) {
+			tools[i].Status = "installed"
+		} else {
+			tools[i].Status = "missing"
+		}
+	}
+	return tools
+}
+
 // ─── File Helpers ─────────────────────────────────────────────────────────────
 
 // ReadLines reads all non-empty, trimmed lines from path.

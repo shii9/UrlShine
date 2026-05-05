@@ -21,10 +21,25 @@
 - Go 1.21+ ([Install Go](https://golang.org/dl/))
 - Linux/macOS/Windows
 
-**Fast Installation:**
+### 🚀 Automated Installation (Recommended)
+
+**Linux/macOS:**
 ```bash
-git clone https://github.com/shii9/UrlShine.git && cd UrlShine && go build -o urlshine . && sudo mv urlshine /usr/local/bin/ && chmod +x /usr/local/bin/urlshine
+git clone https://github.com/shii9/UrlShine.git
+cd UrlShine
+bash install.sh
 ```
+
+**Windows:**
+```bash
+git clone https://github.com/shii9/UrlShine.git
+cd UrlShine
+install.bat
+```
+
+> The installer scripts automatically install all required tools and dependencies!
+
+### Manual Installation
 
 **Step-by-step Setup (Linux/macOS):**
 ```bash
@@ -35,37 +50,55 @@ sudo mv urlshine /usr/local/bin/
 chmod +x /usr/local/bin/urlshine
 ```
 
-**Windows Setup:**
+**Windows:**
 ```bash
 git clone https://github.com/shii9/UrlShine.git
 cd UrlShine
 go build -o urlshine.exe .
-# Then add the directory to your PATH or move urlshine.exe to a directory in PATH
+# Add directory to PATH or move urlshine.exe to a directory in PATH
 ```
 
-**Verify Installation:**
+### 📋 Verify Installation
+
+**Check your installation:**
 ```bash
 urlshine -h
 ```
 
+**Check tool dependencies:**
+```bash
+urlshine doctor
+```
+
+This shows which tools are installed and provides installation commands for missing ones.
+
 ---
 
-### Optional Collection Tools
+### 📦 All Tools Are Installed Automatically
 
-All tools are optional. URLShine gracefully skips tools that aren't installed.
+The installer scripts (`install.sh` and `install.bat`) automatically install all dependencies:
 
-| Tool | Installation Command |
-|------|----------------------|
-| [GAU](https://github.com/lc/gau) | `go install github.com/lc/gau/v2/cmd/gau@latest` |
-| [Katana](https://github.com/projectdiscovery/katana) | `go install github.com/projectdiscovery/katana/cmd/katana@latest` |
-| [GoSpider](https://github.com/jaeles-project/gospider) | `go install github.com/jaeles-project/gospider@latest` |
-| [Waybackurls](https://github.com/tomnomnom/waybackurls) | `go install github.com/tomnomnom/waybackurls@latest` |
-| [Hakrawler](https://github.com/hakluke/hakrawler) | `go install github.com/hakluke/hakrawler@latest` |
-| [Gobuster](https://github.com/OJ/gobuster) | `go install github.com/OJ/gobuster/v3@latest` |
-| [Waymore](https://github.com/xnl-h4ck3r/waymore) | `pip3 install waymore` |
-| [xnLinkFinder](https://github.com/xnl-h4ck3r/xnLinkFinder) | `pip3 install xnLinkFinder` |
-| [Dirb](https://sourceforge.net/projects/dirb/) | `apt-get install dirb` or `brew install dirb` |
-| [httpx](https://github.com/projectdiscovery/httpx) | `go install github.com/projectdiscovery/httpx/cmd/httpx@latest` |
+| Tool | Type | Purpose |
+|------|------|---------|
+| GAU | Go | Archive & passive source aggregation (100+ threads) |
+| Katana | Go | Active JS crawler with parameter extraction |
+| GoSpider | Go | HTML & JS crawler (sitemaps, robots.txt) |
+| Waymore | Python | Advanced wayback machine scraper |
+| Waybackurls | Go | Wayback machine URL extraction |
+| Hakrawler | Go | HTML content crawler with custom headers |
+| xnLinkFinder | Python | JavaScript link and config extraction |
+| Gobuster | Go | Directory discovery (50 threads, quiet mode) |
+| Dirb | System | Directory brute-force enumeration |
+| httpx | Go | Live host verification (optional but recommended) |
+
+**If any tool fails to install:**
+```bash
+# Check what's installed
+urlshine doctor
+
+# Install missing tools manually
+# See the output of 'urlshine doctor' for installation commands
+```
 
 ---
 
@@ -110,6 +143,17 @@ urlshine -f targets.txt -a -c -t 150 -d 3 # File input with options
 urlshine -a -c --no-alive google.com             # Skip alive check
 urlshine -a -c -t 200 -d 5 -o ./results google.com # Custom threads & depth
 ```
+
+---
+
+## ⚙️ Commands
+
+### urlshine doctor
+Check and verify all tool dependencies:
+```bash
+urlshine doctor
+```
+Shows which tools are installed and provides installation commands for missing ones.
 
 ---
 
