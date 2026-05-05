@@ -19,27 +19,43 @@
 
 **Requirements:**
 - Go 1.21+ ([Install Go](https://golang.org/dl/))
+- Linux/macOS/Windows
 
-**Quick Install (One Command):**
+**Fast Installation:**
 ```bash
-go install github.com/shii9/UrlShine@latest
+git clone https://github.com/shii9/UrlShine.git && cd UrlShine && go build -o urlshine . && sudo mv urlshine /usr/local/bin/ && chmod +x /usr/local/bin/urlshine
 ```
 
-That's it! URLShine will be available in your `$GOPATH/bin/` (usually `~/go/bin/`).
+**Step-by-step Setup (Linux/macOS):**
+```bash
+git clone https://github.com/shii9/UrlShine.git
+cd UrlShine
+go build -o urlshine .
+sudo mv urlshine /usr/local/bin/
+chmod +x /usr/local/bin/urlshine
+```
+
+**Windows Setup:**
+```bash
+git clone https://github.com/shii9/UrlShine.git
+cd UrlShine
+go build -o urlshine.exe .
+# Then add the directory to your PATH or move urlshine.exe to a directory in PATH
+```
 
 **Verify Installation:**
 ```bash
-urlshine --help
+urlshine -h
 ```
 
 ---
 
 ### Optional Collection Tools
 
-All of these tools are optional. URLShine gracefully skips tools that aren't installed.
+All tools are optional. URLShine gracefully skips tools that aren't installed.
 
-| Tool | Installation |
-|------|--------------|
+| Tool | Installation Command |
+|------|----------------------|
 | [GAU](https://github.com/lc/gau) | `go install github.com/lc/gau/v2/cmd/gau@latest` |
 | [Katana](https://github.com/projectdiscovery/katana) | `go install github.com/projectdiscovery/katana/cmd/katana@latest` |
 | [GoSpider](https://github.com/jaeles-project/gospider) | `go install github.com/jaeles-project/gospider@latest` |
@@ -83,31 +99,32 @@ urlshine -all -complete -t 100 -d 5 -no-alive google.com
 
 ### Main Flags
 
-| Flag | Type | Default | Description |
-|------|------|---------|-------------|
-| `-all` | boolean | false | Use all 9 collection tools |
-| `-complete` | boolean | false | Run complete processing pipeline (merge, normalize, categorize, alive check) |
-| `-f, --file` | string | - | Input file with targets (one per line) |
-| `-o, --output` | string | urlshine_TIMESTAMP | Output directory |
-| `-t, --threads` | integer | 50 | Parallel threads (recommended: 50-200) |
-| `-d, --depth` | integer | 5 | Crawl depth for active tools |
-| `-no-alive` | boolean | false | Skip live host verification |
-| `-skip-collect` | boolean | false | Skip collection, reprocess existing data |
-| `-v, --verbose` | boolean | false | Debug/verbose logging |
+| Shorthand | Flag | Type | Default | Description |
+|-----------|------|------|---------|-------------|
+| `-a` | `--all` | boolean | false | Use all 9 collection tools |
+| `-c` | `--complete` | boolean | false | Run complete processing pipeline (merge, normalize, categorize, alive check) |
+| `-f` | `--file` | string | - | Input file with targets (one per line) |
+| `-o` | `--output` | string | urlshine_TIMESTAMP | Output directory |
+| `-t` | `--threads` | integer | 50 | Parallel threads (recommended: 50-200) |
+| `-d` | `--depth` | integer | 5 | Crawl depth for active tools |
+| `-v` | `--verbose` | boolean | false | Debug/verbose logging |
+| `-s` | `--subs` | boolean | true | Include subdomains when supported |
+| | `--no-alive` | boolean | false | Skip live host verification |
+| | `--skip-collect` | boolean | false | Skip collection, reprocess existing data |
 
 ### Collection Tools (choose one or more)
 
-| Flag | Tool | Purpose |
-|------|------|---------|
-| `-gau` | GetAllUrls | Archive & passive sources |
-| `-katana` | Katana | Active JS crawler |
-| `-gospider` | GoSpider | HTML & JS crawler |
-| `-waymore` | Waymore | Advanced wayback scraper |
-| `-waybackurls` | Waybackurls | Wayback machine scraper |
-| `-hakrawler` | Hakrawler | HTML content crawler |
-| `-xnlinkfinder` | xnLinkFinder | JS endpoint extractor |
-| `-gobuster` | Gobuster | Directory brute-force |
-| `-dirb` | Dirb | Directory enumeration |
+| Short | Flag | Tool | Purpose |
+|-------|------|------|---------|
+| `-g` | `--gau` | GetAllUrls | Archive & passive sources |
+| `-k` | `--katana` | Katana | Active JS crawler |
+| `-w` | `--gospider` | GoSpider | HTML & JS crawler |
+| `-m` | `--waymore` | Waymore | Advanced wayback scraper |
+| `-b` | `--waybackurls` | Waybackurls | Wayback machine scraper |
+| `-r` | `--hakrawler` | Hakrawler | HTML content crawler |
+| `-x` | `--xnlinkfinder` | xnLinkFinder | JS endpoint extractor |
+| `-u` | `--gobuster` | Gobuster | Directory brute-force |
+| `-i` | `--dirb` | Dirb | Directory enumeration |
 
 ### Understanding `-all` vs `-complete`
 
@@ -135,41 +152,53 @@ Output: Merged, normalized, categorized files + reports
 
 **Simple collection (fast):**
 ```bash
-# Specific tools, collection only
-urlshine -gau -katana google.com
+# Specific tools, collection only (long form)
+urlshine --gau --katana google.com
 
-# All tools, collection only
-urlshine -all google.com
+# Specific tools, collection only (short form)
+urlshine -g -k google.com
+
+# All tools, collection only (long form)
+urlshine --all google.com
+
+# All tools, collection only (short form)
+urlshine -a google.com
 ```
 
 **Collection + complete processing:**
 ```bash
-# Specific tools with processing
-urlshine -gau -katana -complete google.com
+# Long form with specific tools
+urlshine --gau --katana --complete google.com
 
-# All tools with processing
-urlshine -all -complete google.com
+# Short form with specific tools  
+urlshine -g -k -c google.com
+
+# Long form with all tools
+urlshine --all --complete google.com
+
+# Short form with all tools
+urlshine -a -c google.com
 ```
 
 **Batch processing:**
 ```bash
-# Multiple targets from file
-urlshine -f targets.txt -all -complete -t 100 -d 5 -o ./results
+# Multiple targets from file (short form)
+urlshine -f targets.txt -a -c -t 100 -d 5 -o ./results
 
-# Skip alive check for speed
-urlshine -f targets.txt -all -complete -no-alive -t 150 -d 3
+# Skip alive check for speed (short form)
+urlshine -f targets.txt -a -c --no-alive -t 150 -d 3
 
-# Verbose mode for debugging
-urlshine -f targets.txt -all -complete -v
+# Verbose mode for debugging (short form)
+urlshine -f targets.txt -a -c -v
 ```
 
 **Reprocessing:**
 ```bash
 # Reprocess existing results without recollecting
-urlshine -skip-collect -no-alive google.com
+urlshine --skip-collect --no-alive google.com
 
 # Apply different settings to cached results
-urlshine -skip-collect -t 100 google.com
+urlshine --skip-collect -t 100 google.com
 ```
 
 ---
