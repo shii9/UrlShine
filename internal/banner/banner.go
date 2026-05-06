@@ -1,23 +1,21 @@
-// Package banner renders the URLShine ASCII art header.
+// Package banner renders the URLShine ASCII art header and session information.
 package banner
 
 import (
 	"fmt"
 	"runtime"
-	"strings"
 
 	"github.com/fatih/color"
 )
 
 const Version = "2.0.0"
-const Author  = "URLShine Team"
+const Author = "URLShine Team"
 
+// Print displays the professional URLShine banner with system information.
 func Print() {
-	cyan   := color.New(color.FgCyan, color.Bold).SprintFunc()
+	cyan := color.New(color.FgCyan, color.Bold).SprintFunc()
 	yellow := color.New(color.FgYellow, color.Bold).SprintFunc()
-	green  := color.New(color.FgGreen).SprintFunc()
-	faint  := color.New(color.Faint).SprintFunc()
-	white  := color.New(color.FgWhite, color.Bold).SprintFunc()
+	faint := color.New(color.Faint).SprintFunc()
 
 	fmt.Println()
 	fmt.Println(cyan(`  ██╗   ██╗██████╗ ██╗      ███████╗██╗  ██╗██╗███╗   ██╗███████╗`))
@@ -28,19 +26,10 @@ func Print() {
 	fmt.Println(cyan(`   ╚═════╝ ╚═╝  ╚═╝╚══════╝  ╚══════╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝╚══════╝`))
 	fmt.Println()
 	fmt.Printf("  %s   %s\n",
-		yellow("URLShine v"+Version),
-		faint("— Advanced URL Enumeration & Attack Surface Mapper"),
+		yellow("v"+Version),
+		faint("URL Enumeration & Attack Surface Mapper"),
 	)
-	fmt.Printf("  %s\n",
-		green("  GAU · Gospider · Katana · Waymore · Waybackurls · Hakrawler · XnLinkFinder"),
+	fmt.Printf("  %s\n\n",
+		faint("go/"+runtime.Version()+" · "+runtime.GOOS+"/"+runtime.GOARCH),
 	)
-	fmt.Printf("  %s  %s  %s\n",
-		faint("go/"+runtime.Version()),
-		faint("·"),
-		faint(runtime.GOOS+"/"+runtime.GOARCH),
-	)
-	fmt.Println()
-	fmt.Printf("  %s\n", faint(strings.Repeat("─", 67)))
-	fmt.Println()
-	_ = white // reserved
 }

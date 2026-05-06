@@ -1,4 +1,6 @@
 // Package runner coordinates the full reconnaissance pipeline with per-tool tracking.
+// It orchestrates the 5-stage processing pipeline: collection, merging, normalization,
+// categorization, and live verification, with comprehensive logging at each stage.
 package runner
 
 import (
@@ -16,31 +18,39 @@ import (
 	"github.com/shii9/UrlShine/internal/utils"
 )
 
-// Options configuration for runner.
+// Options defines all configurable parameters for the reconnaissance pipeline.
+// This structure is populated from CLI flags and controls pipeline behavior.
 type Options struct {
-	Targets     []string
-	OutputDir   string
-	Threads     int
-	Depth       int
-	Subs        bool
-	SkipAlive   bool
-	SkipCollect bool
-	Verbose     bool
-	RunComplete bool
+	// Target configuration
+	Targets   []string // List of domains/targets to scan
+	OutputDir string   // Output directory for results
 
-	RunAll          bool
-	RunGau          bool
-	RunGospider     bool
-	RunKatana       bool
-	RunWaymore      bool
-	RunWaybackurls  bool
-	RunHakrawler    bool
-	RunXnlinkfinder bool
-	RunGobuster     bool
-	RunDirb         bool
+	// Performance tuning
+	Threads int  // Number of parallel threads (default: 50)
+	Depth   int  // Crawl depth for active tools (default: 3)
+	Subs    bool // Include subdomains in scans
+
+	// Pipeline control
+	SkipAlive   bool // Skip live host verification stage
+	SkipCollect bool // Skip collection, reprocess existing data
+	Verbose     bool // Enable verbose debug logging
+	RunComplete bool // Run full pipeline including post-collection processing
+
+	// Collection tool selection
+	RunAll          bool // Run all available tools
+	RunGau          bool // Enable GetAllUrls
+	RunGospider     bool // Enable GoSpider
+	RunKatana       bool // Enable Katana
+	RunWaymore      bool // Enable Waymore
+	RunWaybackurls  bool // Enable Wayback URLs
+	RunHakrawler    bool // Enable Hakrawler
+	RunXnlinkfinder bool // Enable xnLinkFinder
+	RunGobuster     bool // Enable Gobuster
+	RunDirb         bool // Enable Dirb
 }
 
-// Run executes the URLShine pipeline.
+// Run executes the URLShine reconnaissance pipeline.
+// It orchestrates a 5-stage process for comprehensive URL enumeration.
 func Run(opts Options) error {
 	start := time.Now()
 	logger.SetVerbose(opts.Verbose)

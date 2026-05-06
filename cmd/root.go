@@ -1,3 +1,5 @@
+// Package cmd implements URLShine command-line interface using Cobra framework.
+// It defines all CLI flags, command execution logic, and help documentation.
 package cmd
 
 import (
@@ -14,45 +16,66 @@ import (
 
 const version = "2.0.0"
 
+// CLI flag variables for collection tools.
 var (
-	flagFile      string
-	flagOutputDir string
-	flagThreads   int
-	flagDepth     int
-	flagSubs      bool
-	flagNoAlive   bool
-	flagSkipCol   bool
-	flagVerbose   bool
-	flagComplete  bool
+	flagFile      string // Input file with targets (one per line)
+	flagOutputDir string // Output directory for results
+	flagThreads   int    // Number of parallel threads
+	flagDepth     int    // Crawl depth for active tools
+	flagSubs      bool   // Include subdomains
+	flagNoAlive   bool   // Skip live host verification
+	flagSkipCol   bool   // Skip collection, reprocess existing data
+	flagVerbose   bool   // Enable verbose/debug logging
+	flagComplete  bool   // Run full pipeline (collection + processing)
 
-	flagAll          bool
-	flagGau          bool
-	flagGospider     bool
-	flagKatana       bool
-	flagWaymore      bool
-	flagWaybackurls  bool
-	flagHakrawler    bool
-	flagXnlinkfinder bool
-	flagGobuster     bool
-	flagDirb         bool
+	// Individual tool selection flags
+	flagAll          bool // Run all collection tools
+	flagGau          bool // Run GetAllUrls
+	flagGospider     bool // Run GoSpider
+	flagKatana       bool // Run Katana
+	flagWaymore      bool // Run Waymore
+	flagWaybackurls  bool // Run Wayback URLs
+	flagHakrawler    bool // Run Hakrawler
+	flagXnlinkfinder bool // Run xnLinkFinder
+	flagGobuster     bool // Run Gobuster
+	flagDirb         bool // Run Dirb
 )
 
+// rootCmd is the primary command entry point for URLShine.
+// It orchestrates the full reconnaissance pipeline based on CLI flags and arguments.
 var rootCmd = &cobra.Command{
 	Use:   "urlshine [domain ...] [-f domains.txt]",
-	Short: "URLShine v2.0.0 - professional URL enumeration and reconnaissance",
-	Long: "URLShine collects URLs from selected reconnaissance tools. " +
-		"Use --all (or -a) to run every collector and --complete (or -c) to run the full post-collection pipeline.",
-	Example: `  urlshine --gau --katana google.com
-  urlshine -g -k google.com
-  urlshine --gau --katana --complete google.com
-  urlshine -g -k -c google.com
-  urlshine --all google.com
+	Short: "URLShine v2.0.0 - Professional URL Enumeration & Attack Surface Mapper",
+	Long: `URLShine orchestrates a sophisticated reconnaissance pipeline combining multiple
+URL enumeration tools into a unified workflow. It collects URLs from passive and active
+sources, deduplicates results, categorizes findings by attack vector, and verifies live hosts.
+
+Key features:
+  • Concurrent execution of 9 URL collection tools
+  • Intelligent URL deduplication and normalization  
+  • Automatic categorization into 5 attack vectors
+  • Live host verification with status codes
+  • Professional HTML, JSON, and Markdown reports
+
+Use --all (or -a) to run every collector.
+Use --complete (or -c) to run the full processing pipeline.`,
+	Example: `  # Collect URLs from all tools
   urlshine -a google.com
-  urlshine --all --complete google.com
+
+  # Full processing pipeline (collection + categorization + verification)
   urlshine -a -c google.com
-  urlshine -f domains.txt -a -c -o ./results -t 100
-  urlshine -a -c --no-alive google.com
-  urlshine -k -c -v google.com`,
+
+  # Specific tools only
+  urlshine -gau -katana -waymore google.com
+
+  # High-performance scan with aggressive settings
+  urlshine -a -c -t 150 -d 5 google.com
+
+  # Multiple targets from file
+  urlshine -f targets.txt -a -c -o ./results
+
+  # Fast mode (collection only, no live verification)
+  urlshine -a -c --no-alive google.com`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		targets, err := resolveTargets(args, flagFile)
 		if err != nil {
@@ -152,107 +175,70 @@ func normalizeFlags() {
 func init() {
 	rootCmd.SetHelpFunc(func(cmd *cobra.Command, args []string) {
 		fmt.Printf(`
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                              URLShine v%s                                    ║
-║          Professional URL Enumeration & Attack Surface Mapper                ║
-╚══════════════════════════════════════════════════════════════════════════════╝
+╔════════════════════════════════════════════════════════════════════════════╗
+║                         URLShine v%s                                      ║
+║       Professional URL Enumeration & Attack Surface Mapper                ║
+╚════════════════════════════════════════════════════════════════════════════╝
 
 USAGE
   urlshine [target ...] [flags]
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📌 QUICK EXAMPLES
+EXAMPLES
 
-  Collect URLs only:
-    $ urlshine -all google.com
+  Collect URLs from all tools:
     $ urlshine -a google.com
+
+  Full processing (collect + categorize + verify):
+    $ urlshine -a -c google.com
+
+  Specific tools only:
     $ urlshine -gau -katana google.com
 
-  Full processing pipeline:
-    $ urlshine -all -complete google.com
-    $ urlshine -a -c google.com
-    $ urlshine -f targets.txt -a -c -t 150 -d 3
+  Multiple targets with aggressive settings:
+    $ urlshine -f targets.txt -a -c -t 150 -d 5
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Fast mode (collection only):
+    $ urlshine -a -c --no-alive google.com
 
-🎯 MAIN FLAGS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  -all, -a, --all           Run all 9 collection tools
-  -complete, -c, --complete Full pipeline: merge, normalize, categorize, alive-check
+MAIN FLAGS
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  -a, --all                  Run all collection tools
+  -c, --complete             Run full pipeline (collection + processing)
 
-🔧 COLLECTION TOOLS (choose one or more)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  -gau, -g                  GetAllUrls (archive & passive sources)
-  -katana, -k               Katana (active JS crawler)
-  -gospider, -w             GoSpider (HTML & JS crawler)
-  -waymore, -m              Waymore (advanced wayback scraper)
-  -waybackurls, -b          Wayback URLs (wayback machine scraper)
-  -hakrawler, -r            Hakrawler (HTML content crawler)
-  -xnlinkfinder, -x         xnLinkFinder (JS endpoint extractor)
-  -gobuster, -u             Gobuster (directory brute-force)
-  -dirb, -i                 Dirb (directory enumeration)
+COLLECTION TOOLS (select one or more)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  -g, --gau                  GetAllUrls (passive archives)
+  -k, --katana               Katana (active crawler)
+  -w, --gospider             GoSpider (HTML & JS)
+  -m, --waymore              Waymore (Wayback Machine)
+  -b, --waybackurls          Wayback URLs
+  -r, --hakrawler            Hakrawler (HTML crawler)
+  -x, --xnlinkfinder         xnLinkFinder (JS extraction)
+  -u, --gobuster             Gobuster (directory discovery)
+  -i, --dirb                 Dirb (directory brute-force)
 
-⚙️  OPTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  -t, --threads INT         Parallel threads (default: 50, recommended: 50-200)
-  -d, --depth INT           Crawl depth for active tools (default: 5)
-  -o, --output DIR          Output directory (default: urlshine_<timestamp>)
-  -f, --file FILE           Input file with targets (one per line)
-  -s, --subs                Include subdomains when supported (default: true)
-  -v, --verbose             Debug/verbose logging
-  --no-alive                Skip live host verification
-  --skip-collect            Skip collection, reprocess existing data
+OPTIONS
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  -t, --threads INT          Parallel threads (default: 50)
+  -d, --depth INT            Crawl depth (default: 5)
+  -f, --file FILE            Input file with targets
+  -o, --output DIR           Output directory
+  -v, --verbose              Enable debug logging
+  --no-alive                 Skip live verification
+  --skip-collect             Reprocess existing data
 
-📂 OUTPUT STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  Collection only (without -complete):
-    domain_url/
-    ├── gau.txt
-    ├── katana.txt
-    ├── gospider.txt
-    ├── waymore.txt
-    ├── waybackurls.txt
-    ├── hakrawler.txt
-    ├── xnlinkfinder.txt
-    ├── gobuster.txt
-    └── dirb.txt
-
-  Full processing (with -complete):
-    domain_url/
-    ├── merged_urls.txt (all tools combined)
-    ├── normalized_urls.txt (cleaned & deduplicated)
-    ├── api_endpoints.txt (API paths found)
-    ├── auth_admin_urls.txt (authentication pages)
-    ├── parameters.txt (URLs with query parameters)
-    ├── js_config.txt (JavaScript & config files)
-    ├── directories.txt (directory paths)
-    ├── alive_urls.txt (verified live hosts)
-    ├── report.json
-    └── report.html
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-💡 TIPS
-
-  • You can use ANY flag format: -all, --all, -a (all work the same)
-  • Use -complete to enable merging, normalization, categorization, and alive-check
-  • Use -f to process multiple targets from a file
-  • Default is 50 threads; increase with -t for faster execution
-  • Add -v for verbose output to see what's happening
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-ALL FLAGS (from Cobra)
+For more information, visit: https://github.com/shii9/UrlShine
 `, version)
-		cmd.Flags().PrintDefaults()
-		fmt.Println("")
 	})
 
 	f := rootCmd.Flags()
