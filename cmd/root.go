@@ -64,6 +64,7 @@ For detailed examples and usage scenarios, see: https://github.com/shii9/UrlShin
 	Example: `  urlshine -a google.com
   urlshine -a -c google.com
   urlshine doctor`,
+	Args: cobra.ArbitraryArgs, // Accept domains as positional arguments
 	RunE: func(cmd *cobra.Command, args []string) error {
 		targets, err := resolveTargets(args, flagFile)
 		if err != nil {
@@ -251,6 +252,9 @@ DOCUMENTATION
 	f.BoolVarP(&flagXnlinkfinder, "xnlinkfinder", "x", false, "Run xnLinkFinder")
 	f.BoolVarP(&flagGobuster, "gobuster", "u", false, "Run Gobuster directory discovery")
 	f.BoolVarP(&flagDirb, "dirb", "i", false, "Run Dirb directory enumeration")
+
+	// Register subcommands
+	rootCmd.AddCommand(doctorCmd)
 }
 
 func resolveTargets(args []string, file string) ([]string, error) {
