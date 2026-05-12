@@ -58,24 +58,12 @@ Key features:
   • Professional HTML, JSON, and Markdown reports
 
 Use --all (or -a) to run every collector.
-Use --complete (or -c) to run the full processing pipeline.`,
-	Example: `  # Collect URLs from all tools
-  urlshine -a google.com
+Use --complete (or -c) to run the full processing pipeline.
 
-  # Full processing pipeline (collection + categorization + verification)
+For detailed examples and usage scenarios, see: https://github.com/shii9/UrlShine#-usage-guide--practical-examples`,
+	Example: `  urlshine -a google.com
   urlshine -a -c google.com
-
-  # Specific tools only
-  urlshine -gau -katana -waymore google.com
-
-  # High-performance scan with aggressive settings
-  urlshine -a -c -t 150 -d 5 google.com
-
-  # Multiple targets from file
-  urlshine -f targets.txt -a -c -o ./results
-
-  # Fast mode (collection only, no live verification)
-  urlshine -a -c --no-alive google.com`,
+  urlshine doctor`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		targets, err := resolveTargets(args, flagFile)
 		if err != nil {
@@ -183,24 +171,10 @@ func init() {
 USAGE
   urlshine [target ...] [flags]
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-EXAMPLES
-
-  Collect URLs from all tools:
-    $ urlshine -a google.com
-
-  Full processing (collect + categorize + verify):
-    $ urlshine -a -c google.com
-
-  Specific tools only:
-    $ urlshine -gau -katana google.com
-
-  Multiple targets with aggressive settings:
-    $ urlshine -f targets.txt -a -c -t 150 -d 5
-
-  Fast mode (collection only):
-    $ urlshine -a -c --no-alive google.com
+QUICK START
+  $ urlshine -a google.com                    # Passive collection
+  $ urlshine -a -c google.com                 # Full pipeline
+  $ urlshine doctor                           # Check dependencies
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -209,35 +183,44 @@ MAIN FLAGS
   -a, --all                  Run all collection tools
   -c, --complete             Run full pipeline (collection + processing)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+COLLECTION TOOLS
 
-COLLECTION TOOLS (select one or more)
+  Passive (Archives):
+    -g, --gau                GetAllUrls
+    -m, --waymore            Waymore (enhanced Wayback)
+    -b, --waybackurls        Wayback URLs
+    -x, --xnlinkfinder       JS link extraction
 
-  -g, --gau                  GetAllUrls (passive archives)
-  -k, --katana               Katana (active crawler)
-  -w, --gospider             GoSpider (HTML & JS)
-  -m, --waymore              Waymore (Wayback Machine)
-  -b, --waybackurls          Wayback URLs
-  -r, --hakrawler            Hakrawler (HTML crawler)
-  -x, --xnlinkfinder         xnLinkFinder (JS extraction)
-  -u, --gobuster             Gobuster (directory discovery)
-  -i, --dirb                 Dirb (directory brute-force)
+  Active (Crawlers):
+    -k, --katana             Advanced JS crawler
+    -w, --gospider           HTML/JS crawler
+    -r, --hakrawler          Content crawler
+    -u, --gobuster           Directory brute-force
+    -i, --dirb               Dictionary enumeration
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PERFORMANCE OPTIONS
 
-OPTIONS
-
-  -t, --threads INT          Parallel threads (default: 50)
-  -d, --depth INT            Crawl depth (default: 5)
-  -f, --file FILE            Input file with targets
-  -o, --output DIR           Output directory
+  -t, --threads INT          Parallel workers (default: 50, range: 1-500)
+  -d, --depth INT            Crawl depth for active tools (default: 5)
   -v, --verbose              Enable debug logging
-  --no-alive                 Skip live verification
-  --skip-collect             Reprocess existing data
+
+INPUT/OUTPUT
+
+  -f, --file FILE            Target list file (one per line)
+  -o, --output DIR           Output directory
+
+ADVANCED
+
+  --no-alive                 Skip live verification (faster)
+  --skip-collect             Skip collection, reprocess existing data
+  -s, --subs                 Include subdomains (default: true)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-For more information, visit: https://github.com/shii9/UrlShine
+DOCUMENTATION
+  📖 README:  https://github.com/shii9/UrlShine#-usage-guide--practical-examples
+  🛟 Doctor:  urlshine doctor
+  
 `, version)
 	})
 

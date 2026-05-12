@@ -106,7 +106,244 @@ The `doctor` command performs a full dependency audit and provides immediate rem
 
 ---
 
-## 🕹️ CLI Reference
+## � Usage Guide & Practical Examples
+
+### Getting Started (Beginners)
+
+#### 1️⃣ Simple Single-Target Scan
+Perfect for quick reconnaissance on a single domain:
+
+```bash
+urlshine -a google.com
+```
+**What it does:**
+- Runs all passive collection engines (no traffic to target)
+- Gathers historical URLs from archives
+- Outputs results to `urlshine_<timestamp>/raw/` directory
+- ⏱️ Takes 1-2 minutes
+
+---
+
+#### 2️⃣ Complete Analysis (Recommended for Most Cases)
+Performs collection + categorization + live verification:
+
+```bash
+urlshine -a -c example.com
+```
+**What it does:**
+- Collects URLs from all 9 tools (passive + active)
+- Merges and deduplicates results
+- Categorizes into 5 attack vectors (APIs, Auth pages, Parameters, JS configs, Directories)
+- Verifies which URLs are actually live/responding
+- Generates summary report
+- ⏱️ Takes 3-5 minutes
+
+---
+
+### Targeted Reconnaissance (Intermediate)
+
+#### 3️⃣ Passive-Only Scan (Safe, No Noise)
+Uses only archive-based tools for stealthy reconnaissance:
+
+```bash
+urlshine -gau -waymore -waybackurls -xnlinkfinder -c target.com
+```
+**What it does:**
+- Only queries historical archives (Wayback Machine, CommonCrawl, etc.)
+- No active traffic to the target
+- Safe for sensitive engagements
+- Fast results with lower false positives
+- ⏱️ Takes 1-2 minutes
+
+---
+
+#### 4️⃣ Active Crawling Only (Deep Discovery)
+Uses only live crawlers for maximum endpoint discovery:
+
+```bash
+urlshine -katana -gospider -hakrawler -c target.com -d 5
+```
+**What it does:**
+- Actively crawls the website and follows links
+- Extracts parameters from forms and JavaScript
+- Depth 5 = crawl 5 levels deep
+- Generates significant traffic to target
+- Best for authorized penetration testing
+- ⏱️ Takes 5-10 minutes
+
+---
+
+#### 5️⃣ API Endpoint Discovery Only
+Focus only on API paths and GraphQL endpoints:
+
+```bash
+urlshine -a -c target.com | grep api_endpoints.txt
+```
+**What it does:**
+- Runs full pipeline
+- Output saved to `api_endpoints.txt` (tagged separately)
+- Ideal for API security testing
+- Contains `/api`, `/graphql`, `/v1`, `/swagger` patterns
+
+---
+
+### Advanced Usage (Professionals)
+
+#### 6️⃣ Multi-Target Campaign with Custom Threading
+Scan multiple targets with aggressive parallelization:
+
+```bash
+urlshine -f targets.txt -a -c -t 200 -d 5 -o ./results/
+```
+**What it does:**
+- Reads targets from `targets.txt` (one per line)
+- 200 parallel threads (very aggressive)
+- Depth 5 (thorough crawling)
+- Saves results to `./results/` directory
+- Perfect for enterprise-scale audits
+- ⏱️ 10-30 minutes depending on target count
+
+**Example targets.txt:**
+```
+example.com
+target.co.uk
+vulnerable-app.io
+```
+
+---
+
+#### 7️⃣ Fast Enumeration (Collection Only, No Verification)
+Speed-optimized for rapid reconnaissance:
+
+```bash
+urlshine -a -c --no-alive target.com -t 100
+```
+**What it does:**
+- Runs full collection pipeline
+- Skips HTTP verification (saves 50% of time)
+- 100 parallel threads
+- Returns all URLs without checking if they're live
+- ⏱️ Takes 1-2 minutes
+
+---
+
+#### 8️⃣ Reprocess Existing Data (Skip Collection)
+Use previously collected data with new analysis:
+
+```bash
+urlshine --skip-collect -c urlshine_20260512_143022/
+```
+**What it does:**
+- Skips URL collection phase
+- Recategorizes existing URLs with updated patterns
+- Useful for tweaking categorization rules
+- Much faster for iterative analysis
+- ⏱️ Takes 10-30 seconds
+
+---
+
+### Real-World Scenarios
+
+#### 🎯 Scenario 1: Bug Bounty Hunting
+You want to find hidden APIs and admin panels quickly:
+
+```bash
+# Step 1: Passive reconnaissance (stealthy)
+urlshine -gau -waymore -xnlinkfinder -c target.com
+
+# Step 2: Check what you found
+cat urlshine_*/api_endpoints.txt        # APIs found
+cat urlshine_*/auth_admin_urls.txt      # Admin pages found
+```
+
+---
+
+#### 🎯 Scenario 2: Penetration Testing (Full Authorization)
+Comprehensive infrastructure mapping with active crawling:
+
+```bash
+# Full aggressive scan
+urlshine -a -c target.com -t 150 -d 5
+
+# Results breakdown:
+ls urlshine_*/
+# Shows: raw/, merged.txt, normalized.txt, api_endpoints.txt, etc.
+
+# Analyze the findings:
+cat urlshine_*/*.txt | sort | uniq > all_endpoints.txt
+```
+
+---
+
+#### 🎯 Scenario 3: Security Audit of Multiple Targets
+Enterprise-level assessment of multiple domains:
+
+```bash
+# Create target file
+echo "company1.com" > targets.txt
+echo "company2.com" >> targets.txt
+echo "api.company3.io" >> targets.txt
+
+# Run audit with detailed logging
+urlshine -f targets.txt -a -c -t 200 -d 3 -v -o /tmp/audit_results/
+
+# Generate report
+ls /tmp/audit_results/
+```
+
+---
+
+### Workflow: From Discovery to Exploitation
+
+```bash
+# 1. Discover all endpoints
+urlshine -a -c target.com
+
+# 2. Extract only live API endpoints
+cat urlshine_*/alive_api_endpoints.txt > apis.txt
+
+# 3. Test each API with custom tools
+while read api; do
+  echo "Testing: $api"
+  curl -s "$api" | head -20
+done < apis.txt
+
+# 4. Find endpoints with parameters
+cat urlshine_*/parameters_urls.txt > vulnerable_params.txt
+
+# 5. Fuzz the parameters
+# Use with your favorite fuzzer (wfuzz, ffuf, etc.)
+```
+
+---
+
+## 🔍 Understanding the Output Categories
+
+When you run `urlshine`, results are automatically split into 5 categories. Here's what each means:
+
+| Category | What It Contains | Example | Use Case |
+|:---|:---|:---|:---|
+| **api_endpoints.txt** | REST/GraphQL APIs | `/api/users`, `/graphql` | API security testing |
+| **auth_admin_urls.txt** | Login & admin pages | `/admin`, `/login`, `/dashboard` | Access control testing |
+| **parameters_urls.txt** | URLs with query strings | `/search?q=test&id=123` | Parameter tampering, XSS, SQLi |
+| **js_config_urls.txt** | JavaScript & config files | `.js`, `.json`, `.env`, `.git` | Source code analysis, secret leaks |
+| **directories_urls.txt** | Path-based resources | `/upload`, `/admin/settings` | Directory traversal, access testing |
+
+---
+
+## 🚀 Performance Tuning Guide
+
+| Use Case | Recommended Settings | Command |
+|:---|:---|:---|
+| **Quick Check** | Low threads, passive only | `urlshine -gau -waymore -t 30 target.com` |
+| **Standard Scan** | Default settings | `urlshine -a -c target.com` |
+| **Aggressive** | High threads, deep crawl | `urlshine -a -c -t 150 -d 5 target.com` |
+| **Enterprise** | Maximum parallelization | `urlshine -a -c -t 200 -d 5 -f targets.txt` |
+| **Stealthy** | Low threads, passive | `urlshine -gau -t 20 target.com` |
+
+---
+
+## 🛠️ CLI Reference
 
 ### Operational Logic
 ```bash
