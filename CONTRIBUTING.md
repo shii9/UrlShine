@@ -1,22 +1,24 @@
 # Contributing to URLShine
 
-Thank you for your interest in contributing to URLShine! This document provides guidelines and instructions for contributing to the project.
+**Welcome to the vanguard of reconnaissance.** 
 
-## Code of Conduct
+URLShine is a high-performance framework designed for the elite. To maintain its surgical precision and operational speed, we hold all contributions to a professional, high-standard. If you are looking to sharpen this tool, read this guide.
 
-- Be respectful and professional
-- Focus on the code, not the person
-- Help others learn and grow
-- Report security issues privately
+## 🛡️ Operator Code of Conduct
 
-## Getting Started
+- **Professionalism First:** Maintain an objective, technical, and professional tone in all communications.
+- **Code over Ego:** Focus on the efficiency, security, and stability of the codebase.
+- **Security Integrity:** Report any discovered vulnerabilities privately. Do not disclose them in public issues.
+- **Precision:** Submit focused, well-tested, and documented changes.
 
-### Prerequisites
-- Go 1.21 or higher
-- Git
-- External reconnaissance tools (installed via `install.sh` or `install.bat`)
+## 🛠️ Getting Started
 
-### Development Setup
+### Technical Prerequisites
+- **Go:** 1.21+ (Core engine requirement)
+- **Git:** For version control and collaboration
+- **Arsenal:** All external reconnaissance tools must be installed via `install.sh` or `install.bat`.
+
+### Development Environment Setup
 
 1. **Fork and Clone**
    ```bash
@@ -24,289 +26,214 @@ Thank you for your interest in contributing to URLShine! This document provides 
    cd UrlShine
    ```
 
-2. **Install Dependencies**
+2. **Provision Dependencies**
    ```bash
    go mod download
    bash install.sh  # or install.bat on Windows
    ```
 
-3. **Build and Test**
+3. **Build and Validate**
    ```bash
    make build
    ./urlshine -h
    ```
 
-## Project Structure
+## 📐 System Architecture
 
+### The Engine Room
 ```
 UrlShine/
-├── cmd/                    # CLI command definitions
-│   ├── root.go            # Main command entry point
-│   └── doctor.go          # Dependency checker
+├── cmd/                    # CLI Command Center
+│   ├── root.go            # Primary entry point & orchestrator
+│   └── doctor.go          # System health & dependency auditor
 ├── internal/
-│   ├── banner/            # ASCII art header
-│   ├── logger/            # Terminal output formatting
-│   ├── collector/         # URL collection tools
-│   ├── merger/            # URL aggregation
-│   ├── normalizer/        # URL cleaning & deduplication
-│   ├── splitter/          # URL categorization
-│   ├── alive/             # Live host verification
-│   ├── reporter/          # Report generation
-│   └── utils/             # Utility functions
-├── main.go                # Application entry point
-├── go.mod, go.sum         # Dependencies
-├── Makefile               # Build targets
-└── README.md              # User documentation
+│   ├── banner/            # Tactical identity (ASCII)
+│   ├── logger/            # Structured telemetry system
+│   ├── collector/         # Enumeration engine execution
+│   ├── merger/            # Dataset aggregation
+│   ├── normalizer/        # Signal extraction & deduplication
+│   ├── splitter/          # Attack vector categorization
+│   ├── alive/             # Host verification & probing
+│   ├── reporter/          # Executive & machine reporting
+│   └── utils/             # Core utility functions
+├── main.go                # Application bootstrapper
+├── go.mod, go.sum         # Dependency management
+├── Makefile               # Build & deployment targets
+└── README.md              # Tactical documentation
 ```
 
-## Code Style & Standards
+## 💻 Engineering Standards
 
-### Go Best Practices
-- Follow `gofmt` formatting: `go fmt ./...`
-- Use `go vet`: `go vet ./...`
-- Keep functions small and focused
-- Write meaningful variable names
-- Add comments for exported functions and packages
+### Go Implementation Guidelines
+- **Formatting:** Strict adherence to `gofmt`. Run `go fmt ./...` before every commit.
+- **Verification:** Use `go vet ./...` to ensure code correctness.
+- **Modularity:** Keep functions surgical—single purpose, minimal side effects.
+- **Clarity:** Variable names must be descriptive. Avoid ambiguity.
+- **Documentation:** All exported functions must have a clear, concise comment explaining the *why*, not the *what*.
 
 ### Documentation Requirements
 ```go
-// Package collector executes URL enumeration tools concurrently.
+// Package collector orchestrates the concurrent execution of URL enumeration tools.
 package collector
 
-// Run collects URLs using the configured tools.
-// It manages concurrent execution with configurable thread limits.
+// Run executes the selected toolset against targets with a defined thread limit.
+// It ensures high-concurrency execution while maintaining system stability.
 func Run(targets []string, opts Options) error {
     // implementation
 }
 ```
 
 ### Naming Conventions
-- **Packages**: lowercase, single word when possible
-- **Functions**: CamelCase, descriptive names
-- **Variables**: short but meaningful (not `x`, use `count`)
-- **Constants**: PascalCase or UPPER_CASE
+- **Packages:** lowercase, single-word (e.g., `collector`, `normalizer`).
+- **Functions:** CamelCase, action-oriented (e.g., `NormalizeFile`).
+- **Variables:** Concise but meaningful (e.g., `urlCount` instead of `c`).
+- **Constants:** PascalCase or UPPER_SNAKE_CASE for global constants.
 
 ### Error Handling
+**Do not panic in production code.** Wrap errors with context to allow precise debugging.
 ```go
-// Good
+// Correct: Provide context for the failure
 if err != nil {
-    return fmt.Errorf("operation name: %w", err)
+    return fmt.Errorf("collector: failed to execute gau: %w", err)
 }
 
-// Bad
+// Incorrect: Generic failure
 if err != nil {
     panic(err)
 }
 ```
 
-## Making Changes
+## 🚀 Operationalizing Changes
 
-### For Bug Fixes
+### Bug Fixes
+1. **Isolate:** `git checkout -b fix/issue-description`
+2. **Execute:** Implement a minimal, focused fix.
+3. **Validate:** Test against the specific failure case.
+4. **Document:** Update documentation if the fix alters behavior.
+5. **Commit:** Use a clear, professional message: `fix: resolve URL deduplication race condition`.
 
-1. **Create a branch**
-   ```bash
-   git checkout -b fix/issue-description
-   ```
+### New Feature Integration
+1. **Strategize:** Open an issue to discuss the tactical value of the feature.
+2. **Develop:** `git checkout -b feature/feature-name`.
+3. **Implement:** Ensure the code is clean, modular, and documented.
+4. **Stress Test:** Verify under both ideal and adversarial (failure) conditions.
+5. **Deploy:** Commit and submit a detailed Pull Request.
 
-2. **Make your changes**
-   - Keep changes focused and minimal
-   - Add tests if applicable
-   - Update documentation if needed
+### Performance Optimization
+1. **Benchmark:** Establish a baseline. You must prove the gain with data.
+2. **Optimize:** Focus on reducing CPU/Memory overhead or increasing throughput.
+3. **Verify:** Ensure zero regressions in functionality.
+4. **Report:** Document the exact performance delta (e.g., "Reduced memory usage by 20%").
 
-3. **Test your changes**
-   ```bash
-   ./urlshine -a test-domain.com
-   make build
-   ```
+## 🧪 Testing Protocol
 
-4. **Commit with clear messages**
-   ```bash
-   git commit -m "fix: description of fix
-
-   - Specific change 1
-   - Specific change 2"
-   ```
-
-### For New Features
-
-1. **Discuss first** — Open an issue to discuss the feature
-2. **Create a branch** — `git checkout -b feature/feature-name`
-3. **Implement** — Keep code clean and well-documented
-4. **Test thoroughly** — Test both success and failure cases
-5. **Update documentation** — README, comments, etc.
-6. **Commit** — Use clear commit messages
-
-### For Performance Improvements
-
-1. **Measure first** — Benchmark before and after
-2. **Document impact** — Show performance gains
-3. **Maintain compatibility** — Don't break existing features
-4. **Test edge cases** — Ensure no regressions
-
-## Testing
-
-### Manual Testing
+### Manual Validation
 ```bash
-# Test single domain
+# Single target audit
 ./urlshine -a example.com
 
-# Test with specific tools
+# Specific tool chain validation
 ./urlshine -gau -katana example.com
 
-# Test full pipeline
+# Full pipeline stress test
 ./urlshine -a -c example.com
 
-# Test multiple targets
+# Mass target verification
 ./urlshine -f targets.txt -a -c
-
-# Check dependencies
-./urlshine doctor
 ```
 
-### Code Quality Checks
+### Automated Quality Assurance
 ```bash
-# Format code
+# Code formatting check
 go fmt ./...
 
-# Run linter
+# Static analysis
 go vet ./...
 
-# Check for issues
+# Unit & Integration test suite
 go test ./...
 ```
 
-## Pull Request Process
+## 📨 The Pull Request Process
 
-1. **Update your branch** — `git pull origin main`
-2. **Write descriptive PR title** — "Add X feature" or "Fix Y bug"
-3. **Describe changes** — Explain what and why
-4. **Link issues** — Reference related issues (`Fixes #123`)
-5. **Test thoroughly** — Show testing evidence
-6. **Keep it focused** — One feature or fix per PR
+1. **Synchronize:** `git pull origin main`
+2. **Title:** Be concise and professional (e.g., "feat: integrate Shodan API collection").
+3. **Context:** Explain the tactical necessity of the change.
+4. **Evidence:** Provide logs, screenshots, or benchmark results proving the change works.
+5. **Scope:** One PR = One logical change. Do not bundle unrelated fixes.
 
 ### PR Template
 ```markdown
-## Description
-Brief description of changes
+## Tactical Summary
+Briefly describe the impact of this change.
 
-## Type of Change
-- [ ] Bug fix
-- [ ] New feature  
-- [ ] Performance improvement
-- [ ] Documentation update
+## Change Type
+- [ ] Bug fix (Corrects existing behavior)
+- [ ] New Feature (Expands the arsenal)
+- [ ] Performance Optimization (Increases throughput)
+- [ ] Documentation Update (Improves clarity)
 
-## How to Test
-Steps to verify the changes work correctly
+## Validation Plan
+How was this tested? Provide the command and the expected output.
 
-## Testing Evidence
-Screenshots, output examples, test results
+## Evidence
+Attach logs or screenshots of successful execution.
 
 ## Related Issues
-Fixes #123
-Related to #456
+Fixes #123 | Relates to #456
 ```
 
-## Areas for Contribution
+## 🎯 Priority Areas for Contribution
 
-### High Priority
-- [ ] Additional collection tools (IronSource, Shodan, etc.)
-- [ ] Improved categorization patterns
-- [ ] Performance optimizations
-- [ ] Better error messages
+### 🔴 High Priority (Critical)
+- **New Arsenal/Engines:** Integration of elite tools (e.g., Shodan, Chaos, IronSource).
+- **Advanced Vector Patterns:** Improving the regex for identifying high-value endpoints.
+- **Core Pipeline Optimization:** Reducing the overhead of the merger and normalizer.
 
-### Medium Priority
-- [ ] HTML report generation
-- [ ] Advanced filtering options
-- [ ] Custom output formats
-- [ ] Proxy support
+### 🟡 Medium Priority (Enhancements)
+- **Executive HTML Reports:** Transforming data into visual attack surface maps.
+- **Advanced Filtering:** Adding exclusion patterns and custom include/exclude lists.
+- **Network Proxy Support:** Integrating SOCKS5/HTTP proxies for stealth.
 
-### Documentation
-- [ ] Additional examples
-- [ ] Troubleshooting guides
-- [ ] Video tutorials
-- [ ] Use case studies
+### 🔵 Documentation
+- **Advanced Use-Case Guides:** Documenting complex recon workflows.
+- **Troubleshooting Matrices:** Expanding the error resolution guide.
 
-## Reporting Bugs
+## 🐛 Bug Reporting
 
-### Before Reporting
-- Check existing issues
-- Try latest version
-- Include full error messages
-- Test on different OS if possible
+### Pre-Flight Check
+- Search existing issues to avoid duplicates.
+- Ensure you are running the latest commit from `main`.
+- Isolate the bug to a single tool or stage.
 
-### Bug Report Template
-```markdown
+### Report Format
 **Environment**
-- OS: [e.g., Linux/Windows/macOS]
-- Go Version: [e.g., 1.21]
+- OS: [e.g., Ubuntu 22.04 / Windows 11]
+- Go Version: [e.g., 1.22]
 - URLShine Version: [e.g., 2.0.0]
 
-**Description**
-Brief description of the bug
+**The Defect**
+Clear description of the observed vs. expected behavior.
 
 **Steps to Reproduce**
-1. Run command: `urlshine ...`
-2. Observe behavior
-3. Expected vs actual
+1. `urlshine -a <target>`
+2. Observe `<error>`
 
-**Error Messages**
-Full error output or logs
+**Telemetry**
+Attach the full terminal output or log file.
 
-**Screenshots**
-If applicable, terminal output or screenshots
-```
+## 🔒 Security Disclosures
 
-## Security Issues
+**NEVER open a public issue for a security vulnerability in URLShine.**
 
-**Do not open public issues for security vulnerabilities.**
+To report a flaw:
+1. Send an encrypted email to `security@urlshine.dev` (if available).
+2. Use GitHub's private security advisory feature.
+3. Provide a Proof-of-Concept (PoC) and a suggested remediation.
 
-Instead:
-1. Email: security@urlshine.dev (if applicable)
-2. Or open a private security advisory via GitHub
-3. Allow reasonable time for response and fix
-
-## Documentation Guidelines
-
-### README Updates
-- Keep examples current
-- Test all examples before committing
-- Use proper markdown formatting
-- Add table of contents for long docs
-
-### Code Comments
-- Explain the "why", not the "what"
-- Use proper grammar and punctuation
-- Keep comments current with code
-- Avoid obvious comments
-
-### Commit Messages
-```
-feat: add new collection tool support
-fix: resolve URL deduplication issue
-docs: update installation guide
-perf: optimize URL normalization
-chore: update dependencies
-```
-
-## Recognition
-
-Contributors are recognized in:
-- GitHub contributors page
-- CONTRIBUTORS.md file (when created)
-- Release notes
-- GitHub Sponsors (if applicable)
-
-## Questions?
-
-- **General questions**: Open a discussion on GitHub
-- **Bug reports**: Create an issue with details
-- **Feature requests**: Open an issue with `[FEATURE]` prefix
-- **Documentation**: Check README first, then open an issue
-
-## License
-
-By contributing to URLShine, you agree that your contributions will be licensed under the MIT License.
+## 📜 Licensing
+By contributing to URLShine, you agree that your work is licensed under the **MIT License**.
 
 ---
 
-Thank you for contributing to URLShine and helping make it better! 🙏
+**Precision. Power. Performance. Help us build the ultimate recon framework.**
