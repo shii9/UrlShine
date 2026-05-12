@@ -9,8 +9,10 @@ import (
 	"time"
 
 	"github.com/shii9/UrlShine/internal/alive"
+	"github.com/shii9/UrlShine/internal/banner"
 	"github.com/shii9/UrlShine/internal/collector"
 	"github.com/shii9/UrlShine/internal/extractor"
+	"github.com/shii9/UrlShine/internal/installer"
 	"github.com/shii9/UrlShine/internal/logger"
 	"github.com/shii9/UrlShine/internal/normalizer"
 	"github.com/shii9/UrlShine/internal/reporter"
@@ -35,8 +37,11 @@ func RunProfessional(opts Options) error {
 	start := time.Now()
 	logger.SetVerbose(opts.Verbose)
 
-	// Display banner during execution
-	// banner.Print()
+	// Display professional banner
+	banner.Print()
+
+	// Verify and check for missing tools
+	installer.CheckAndInstall()
 
 	if err := utils.EnsureDir(opts.OutputDir); err != nil {
 		return fmt.Errorf("create output dir: %w", err)
