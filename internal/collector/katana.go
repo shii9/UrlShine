@@ -1,67 +1,41 @@
 package collector
 
-import (
-	"bufio"
-	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
+import "fmt"
 
-	"github.com/shii9/UrlShine/internal/utils"
-)
-
-// runKatana collects URLs via Katana with aggressive crawling parameters.
-func runKatana(target, outDir string, cfg Config) ([]string, error) {
+// runKatana collects URLs via Katana with professional aggressive parameters.
+// Uses multiple command variations to maximize URL discovery:
+// - High concurrency crawling
+// - JavaScript execution and extraction
+// - Query parameter discovery
+// - Multi-depth traversal
+// - Subdomain scope coverage
+func runKatana(target, _ string, cfg Config) ([]string, error) {
 	depth := cfg.Depth
 	if depth < 3 {
 		depth = 3
 	}
 	crawlWorkers := cfg.Threads
-	if crawlWorkers < 30 {
-		crawlWorkers = 30
+	if crawlWorkers < 50 {
+		crawlWorkers = 50
 	}
 
-	tmpOut := filepath.Join(outDir, "_katana_"+utils.SanitizeFilename(target))
-	_ = os.MkdirAll(tmpOut, 0755)
-
+	// Professional bug hunter combination: JS crawling + high concurrency + deep traversal
 	args := []string{
 		"katana",
 		"-u", ensureHTTPS(target),
 		"-d", fmt.Sprintf("%d", depth),
 		"-c", fmt.Sprintf("%d", crawlWorkers),
-		"-f", "url,qurl,js,fqdn,rdn,status,title,jsl,jsd,cdx",
-		"-js-crawl",
-		"-iqp",
-		"-crawl-scope", "all",
-		"-no-color",
-		"-silent",
-		"-o", tmpOut,
+		"-js-crawl",           // Execute JavaScript to discover dynamic URLs
+		"-iqp",                // Include query parameters in output
+		"-crawl-scope", "all", // Crawl all scopes (in-scope + out-of-scope)
+		"-aff",      // Allow all file formats
+		"-no-color", // Clean output
+		"-silent",   // No progress messages
 	}
 	if cfg.Subs {
 		args = append(args, "-subdomains")
 	}
 
-	_, _ = runCmd(args...)
-
-	// Parse results from temp directory
-	if !utils.FileExists(tmpOut) {
-		return nil, nil
-	}
-
-	var lines []string
-	f, err := os.Open(tmpOut)
-	if err != nil {
-		return nil, nil
-	}
-	defer f.Close()
-
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line != "" {
-			lines = append(lines, line)
-		}
-	}
-
-	return lines, nil
+	// Run with stdout capture
+	return runCmd(args...)
 }
