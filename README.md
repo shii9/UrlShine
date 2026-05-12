@@ -88,6 +88,8 @@ URLShine orchestrates a diverse set of engines categorized by their intelligence
 git clone https://github.com/shii9/UrlShine.git
 cd UrlShine
 bash install.sh
+cd ..
+mv UrlShine /usr/local/bin
 ```
 
 After installation, URLShine will be available as a system command:
