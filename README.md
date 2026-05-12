@@ -64,41 +64,24 @@ URLShine is not just a wrapper; it is a high-performance reconnaissance pipeline
 
 ### ⚠️ Requirements
 - **Go:** 1.21+ (Required for core engine)
-- **OS:** Linux, macOS, or Windows
+- **OS:** Linux
 - **External Tools:** Handled automatically by the deployment scripts.
 
 ### 🚀 Deployment (Recommended)
 
-**Linux/macOS:**
 ```bash
 git clone https://github.com/shii9/UrlShine.git
 cd UrlShine
 bash install.sh
 ```
-
-**Windows (PowerShell):**
-```powershell
-git clone https://github.com/shii9/UrlShine.git
-cd UrlShine
-.\install.bat
-```
 *The installer automatically detects your environment and deploys all required dependencies.*
 
 ### 🛠️ Manual Build
-**Linux/macOS:**
 ```bash
 git clone https://github.com/shii9/UrlShine.git
 cd UrlShine
 make build
 sudo make install
-```
-
-**Windows:**
-```powershell
-git clone https://github.com/shii9/UrlShine.git
-cd UrlShine
-go build -o urlshine.exe .
-# Add to PATH for global execution
 ```
 
 ### 🩺 System Validation
