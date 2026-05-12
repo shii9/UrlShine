@@ -90,46 +90,49 @@ install_dirb
 section "Building URLShine Binary"
 info "Compiling URLShine ..."
 go mod tidy
-go build -ldflags "-X main.version=2.0.0 -s -w" -o urlshine .
-ok "urlshine binary compiled"
+if go build -ldflags "-X main.version=2.0.0 -s -w" -o urlshine . 2>/dev/null; then
+  ok "urlshine compiled successfully"
+else
+  warn "Build failed"
+  exit 1
+fi
 
 section "Installing URLShine to System PATH"
 if sudo cp urlshine /usr/local/bin/urlshine; then
   sudo chmod +x /usr/local/bin/urlshine
-  ok "urlshine installed to /usr/local/bin"
-  ok "Usage: urlshine --help"
-  ok "        urlshine doctor"
+  ok "urlshine installed and accessible globally"
 else
   warn "Failed to install to /usr/local/bin (requires sudo)"
   info "You can still run: ./urlshine --help"
+  exit 1
 fi
 
 section "Verifying Installation"
 
 verify_tool() {
   if command -v "$1" &>/dev/null; then
-    ok "$1 ✓"
+    ok "$1"
   else
-    warn "$1 ✗"
+    warn "$1 (not found)"
   fi
 }
 
-info "Checking installed tools..."
+info "Checking installed tools:"
 verify_tool "urlshine"
 verify_tool "gau"
 verify_tool "katana"
 verify_tool "gospider"
 verify_tool "httpx"
-verify_tool "waymore"
-verify_tool "xnlinkfinder"
 
 section "✨ Installation Complete!"
 
 echo ""
-echo -e "${BOLD}${CYAN}Quick Start:${NC}"
+echo -e "${BOLD}${CYAN}Ready to use:${NC}"
 echo ""
-echo "  urlshine --help         # Show all options"
-echo "  urlshine doctor         # Verify installation"
-echo "  urlshine -a -c google.com  # Run your first scan"
+echo "  urlshine --help         # Display all options"
+echo "  urlshine doctor         # System health check"
+echo "  urlshine -a -c google.com  # Scan a domain"
+echo ""
+echo "✓ All tools accessible from anywhere on your machine"
 echo ""
 

@@ -9,7 +9,7 @@ all: tidy build
 build:
 	@echo "[BUILD] Compiling $(BINARY) ..."
 	go build $(LDFLAGS) -o $(BINARY) .
-	@echo "[✔] ./$(BINARY)"
+	@echo "[✔] $(BINARY) binary ready — run 'bash install.sh' to install"
 
 windows:
 	@echo "[BUILD] Windows binary ..."
