@@ -242,12 +242,18 @@ For more information, visit: https://github.com/shii9/UrlShine
 	})
 
 	f := rootCmd.Flags()
+
+	// ─── Input/Output ────────────────────────────────────────────────────────────
 	f.StringVarP(&flagFile, "file", "f", "", "Input file with targets (one per line)")
 	f.StringVarP(&flagOutputDir, "output", "o", "", "Output directory (default: urlshine_<timestamp>)")
-	f.IntVarP(&flagThreads, "threads", "t", 50, "Parallel threads for tools and probing")
-	f.IntVarP(&flagDepth, "depth", "d", 5, "Crawl depth for active tools")
-	f.BoolVarP(&flagSubs, "subs", "s", true, "Include subdomains when supported")
-	f.BoolVar(&flagNoAlive, "no-alive", false, "Skip live host verification during -complete")
+
+	// ─── Execution Parameters ─────────────────────────────────────────────────────
+	f.IntVarP(&flagThreads, "threads", "t", 50, "Parallel threads for concurrent execution (recommended: 50-150)")
+	f.IntVarP(&flagDepth, "depth", "d", 5, "Crawl depth for active tools like Katana (higher = more thorough but slower)")
+	f.BoolVarP(&flagSubs, "subs", "s", true, "Include subdomains in enumeration")
+
+	// ─── Pipeline Control ─────────────────────────────────────────────────────────
+	f.BoolVarP(&flagNoAlive, "no-alive", "n", false, "Skip live host verification (fast mode)")
 	f.BoolVar(&flagSkipCol, "skip-collect", false, "Skip collection and process existing files")
 	f.BoolVarP(&flagVerbose, "verbose", "v", false, "Enable debug/verbose logging")
 	f.BoolVarP(&flagComplete, "complete", "c", false, "Run merge, normalize, categorize, reports, and alive checking")

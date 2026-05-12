@@ -29,31 +29,43 @@ type Groups struct {
 }
 
 var (
+	// API Endpoint Patterns: /api/*, /graphql, /v1-v9, /swagger, etc.
 	reAPI = regexp.MustCompile(
-		`(?i)(/api[/_v-]|/graphql|/gql|/rest/|/v[0-9]+[./]|/rpc[./]|/grpc|` +
-			`/swagger|/openapi|/redoc|/api-docs|/api\.json|/api\.yaml|/endpoint)`)
+		`(?i)(/api[/_v-]|/graphql|/gql|/rest[/_]|/v[0-9]+[./]|/rpc[./]|/grpc|` +
+			`/swagger|/openapi|/redoc|/docs|/api-docs|/api\.json|/api\.yaml|` +
+			`/endpoint|/service|/actuator|/metrics|/health|/status)(?:[/?#]|$)`)
 
+	// Authentication & Admin Pages: login, auth, admin, dashboard, etc.
 	reAuth = regexp.MustCompile(
-		`(?i)(login|logout|log-in|log-out|signin|sign-in|sign-up|signup|` +
-			`register|registration|auth[^o]|oauth|sso|saml|` +
-			`admin|administrator|wp-admin|wp-login|` +
+		`(?i)\b(login|logout|log-in|log-out|signin|sign-in|sign-up|signup|` +
+			`register|registration|auth[^o]|oauth|oidc|sso|saml|ldap|` +
+			`admin|administrator|wp-admin|wp-login|phpmyadmin|cpanel|` +
 			`dashboard|panel|console|portal|backoffice|manage|manager|` +
-			`cp|cpanel|control|moderator|superuser|` +
-			`forgot.?pass|reset.?pass|change.?pass|two.?factor|2fa|mfa|` +
-			`verify|confirm|activate|unlock|recovery)`)
+			`control|moderator|superuser|root|` +
+			`forgot.*pass|reset.*pass|change.*pass|recover|` +
+			`two.*factor|2fa|mfa|otp|verify|confirm|activate|unlock)(?:[/?#]|$)`)
 
+	// JavaScript & Configuration Files
 	reJS = regexp.MustCompile(
-		`(?i)\.(js|mjs|jsx|ts|tsx|json|php|env|yaml|yml|cfg|conf|ini|config|` +
-			`xml|toml|properties|gradle|pom|lock)(\?|#|$)`)
+		`(?i)\.(js|mjs|jsx|ts|tsx|json|jsonp|php|phtml|env|yaml|yml|cfg|conf|ini|config|` +
+			`xml|toml|properties|gradle|pom|lock|secret|key|pem|crt|cert)(\?|#|$)`)
 
+	// Sensitive Configuration Paths
 	reConfigPath = regexp.MustCompile(
-		`(?i)/(config|settings|env|\.env|secrets|credentials|backup|dump|` +
-			`\.git|\.svn|\.hg|web\.config|app\.config|appsettings)`)
+		`(?i)/(config|settings|env|\.env|\.env\.local|secrets|credentials|backup|dump|` +
+			`private|internal|admin|include|\.git|\.svn|\.hg|cvs|web\.config|app\.config|appsettings|` +
+			`database|db|db\.php|config\.php|settings\.php|bootstrap)(?:[/?#]|$)`)
 
 	reFileExt = regexp.MustCompile(`(?i)\.[a-z0-9]{1,8}(\?|#|$)`)
 )
 
-// Split maps URLs to groups based on regex patterns.
+// Split maps URLs to groups based on regex patterns with priority-based categorization.
+// Categories are checked in priority order to avoid overlaps:
+// 1. JS/Config files (highest priority, most specific)
+// 2. API endpoints
+// 3. Auth pages
+// 4. Query parameters
+// 5. Directories (catchall)
 func Split(urls []string) Groups {
 	var g Groups
 	for _, u := range urls {
@@ -65,23 +77,31 @@ func Split(urls []string) Groups {
 			continue
 		}
 
-		if parsed.RawQuery != "" {
-			g.Params = append(g.Params, u)
-		}
-
+		// Priority 1: JS/Config files (most specific)
 		if reJS.MatchString(u) || reConfigPath.MatchString(parsed.Path) {
 			g.JS = append(g.JS, u)
 			continue
 		}
 
+		// Priority 2: API endpoints
 		if reAPI.MatchString(u) {
 			g.API = append(g.API, u)
+			continue
 		}
 
+		// Priority 3: Auth/Admin pages
 		if reAuth.MatchString(u) {
 			g.Auth = append(g.Auth, u)
+			continue
 		}
 
+		// Priority 4: Query parameters
+		if parsed.RawQuery != "" {
+			g.Params = append(g.Params, u)
+			continue
+		}
+
+		// Priority 5: Directories (catchall)
 		lastSeg := filepath.Base(parsed.Path)
 		if lastSeg != "" && lastSeg != "." && lastSeg != "/" {
 			if !reFileExt.MatchString(lastSeg) {

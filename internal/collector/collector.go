@@ -32,6 +32,10 @@ type Config struct {
 }
 
 // DefaultConfig returns production-ready defaults optimized for aggressive collection.
+// Recommended for comprehensive attack surface mapping:
+// - Threads: 50 (can be increased to 100-150 for faster execution)
+// - Depth: 5 (balances thoroughness vs execution time)
+// - Timeout: 60s per tool (accounts for large target scans)
 func DefaultConfig() Config {
 	return Config{Threads: 50, Depth: 5, Subs: true, Timeout: 60, RunAll: true}
 }
@@ -42,16 +46,23 @@ type tool struct {
 	fn   func(target, outDir string, cfg Config) ([]string, error)
 }
 
+// allTools defines the URL collection engines in optimal execution order.
+// Passive tools (archives) run first, then active crawlers, then brute-force tools.
 var allTools = []tool{
-	{"gau", runGAU},
-	{"gospider", runGospider},
-	{"katana", runKatana},
-	{"waymore", runWaymore},
-	{"waybackurls", runWaybackurls},
-	{"hakrawler", runHakrawler},
-	{"xnLinkFinder", runXnLinkFinder},
-	{"gobuster", runGobuster},
-	{"dirb", runDirb},
+	// Passive URL Archives (fastest, no target interaction)
+	{"gau", runGAU},                   // Wayback, CommonCrawl, URLScan, OTX
+	{"waymore", runWaymore},           // Enhanced Wayback Machine queries
+	{"waybackurls", runWaybackurls},   // Pure Wayback Machine access
+	{"xnLinkFinder", runXnLinkFinder}, // JS/HTML link extraction
+
+	// Active Crawlers (moderate traffic, high quality results)
+	{"katana", runKatana},       // Advanced JS-capable crawler
+	{"gospider", runGospider},   // HTML, sitemap, robots, JS
+	{"hakrawler", runHakrawler}, // HTML endpoint discovery
+
+	// Brute-Force Discovery (higher traffic, completes last)
+	{"gobuster", runGobuster}, // Directory & DNS brute-force
+	{"dirb", runDirb},         // Dictionary-based discovery
 }
 
 // RunAll executes every installed tool against every target concurrently.
