@@ -67,8 +67,21 @@ install_dirb() {
 }
 install_dirb
 
-section "Building URLShine"
+section "Building URLShine Binary"
+info "Compiling URLShine ..."
 go mod tidy
-go build -ldflags "-s -w" -o urlshine .
-ok "urlshine binary built — run: ./urlshine --help"
+go build -ldflags "-X main.version=2.0.0 -s -w" -o urlshine .
+ok "urlshine binary compiled"
+
+section "Installing URLShine to System PATH"
+if sudo cp urlshine /usr/local/bin/urlshine; then
+  sudo chmod +x /usr/local/bin/urlshine
+  ok "urlshine installed to /usr/local/bin"
+  ok "Usage: urlshine --help"
+  ok "        urlshine doctor"
+else
+  warn "Failed to install to /usr/local/bin (requires sudo)"
+  info "You can still run: ./urlshine --help"
+fi
+
 echo ""

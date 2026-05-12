@@ -90,6 +90,13 @@ cd UrlShine
 bash install.sh
 ```
 
+After installation, URLShine will be available as a system command:
+```bash
+urlshine --help          # Full usage documentation
+urlshine doctor          # Dependency audit & health check
+urlshine -a -c google.com # Run full enumeration pipeline
+```
+
 ### 🩺 System Validation
 Ensure your environment is battle-ready with the internal health check:
 ```bash
