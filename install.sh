@@ -54,7 +54,7 @@ pip_install() {
 
 echo ""
 echo -e "${CYAN}${BOLD}  ╔══════════════════════════════════════════╗"
-echo -e "  ║     URLShine — Tool Installer  v2.0.0    ║"
+echo -e "  ║     URLShine — Tool Installer  v1.0.1    ║"
 echo -e "  ╚══════════════════════════════════════════╝${NC}"
 echo ""
 
@@ -90,7 +90,7 @@ install_dirb
 section "Building URLShine Binary"
 info "Compiling URLShine ..."
 go mod tidy
-if go build -ldflags "-X main.version=2.0.0 -s -w" -o urlshine . 2>/dev/null; then
+if go build -ldflags "-X main.version=1.0.1 -s -w" -o urlshine . 2>/dev/null; then
   ok "urlshine compiled successfully"
 else
   warn "Build failed"

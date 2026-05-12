@@ -1,5 +1,5 @@
 BINARY  := urlshine
-VERSION := 2.0.0
+VERSION := 1.0.1
 LDFLAGS := -ldflags "-X main.version=$(VERSION) -s -w"
 
 .PHONY: all build tidy clean install run-demo windows linux

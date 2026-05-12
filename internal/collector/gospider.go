@@ -6,23 +6,34 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
 	"github.com/shii9/UrlShine/internal/utils"
 )
 
-// runGospider collects URLs via gospider.
+// runGospider collects URLs via gospider with aggressive parameters.
 func runGospider(target, outDir string, cfg Config) ([]string, error) {
 	tmpOut := filepath.Join(outDir, "_gospider_"+utils.SanitizeFilename(target))
 	_ = os.MkdirAll(tmpOut, 0755)
 
+	// Set aggressive concurrency
+	concurrency := cfg.Threads
+	if concurrency < 30 {
+		concurrency = 30
+	}
+	depth := cfg.Depth
+	if depth < 3 {
+		depth = 3
+	}
+
 	args := []string{
 		"gospider",
 		"-s", ensureHTTPS(target),
-		"-c", fmt.Sprintf("%d", cfg.Threads),
-		"-d", fmt.Sprintf("%d", cfg.Depth),
+		"-c", fmt.Sprintf("%d", concurrency),
+		"-d", fmt.Sprintf("%d", depth),
 		"-o", tmpOut,
 		"--js", "--sitemap", "--robots", "--other-source",
 		"-a", "-w", "-r",
-		"--blacklist", `\.(png|jpg|jpeg|gif|bmp|svg|ico|css|woff|woff2|eot|ttf|pdf|zip|rar|tar|gz|mp4|webm)$`,
+		"--blacklist", `\.(png|jpg|jpeg|gif|bmp|svg|ico|webp|css|woff|woff2|eot|ttf|pdf|zip|rar|tar|gz|mp4|mp3|avi|webm|mkv|mov|flv|swf)$`,
 	}
 	if cfg.Subs {
 		args = append(args, "--subs")

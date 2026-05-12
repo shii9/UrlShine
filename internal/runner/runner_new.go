@@ -35,6 +35,9 @@ func RunProfessional(opts Options) error {
 	start := time.Now()
 	logger.SetVerbose(opts.Verbose)
 
+	// Display banner during execution
+	// banner.Print()
+
 	if err := utils.EnsureDir(opts.OutputDir); err != nil {
 		return fmt.Errorf("create output dir: %w", err)
 	}

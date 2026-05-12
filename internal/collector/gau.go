@@ -13,7 +13,7 @@ func runGAU(target, _ string, cfg Config) ([]string, error) {
 		"gau", target,
 		"--threads", fmt.Sprintf("%d", threads),
 		"--providers", "wayback,commoncrawl,urlscan,otx",
-		"--blacklist", "png,jpg,jpeg,gif,bmp,svg,ico,webp,css,eot,ttf,woff,woff2,pdf,zip,rar,tar,gz,mp4,mp3,avi,webm,mkv",
+		"--blacklist", "png,jpg,jpeg,gif,bmp,svg,ico,webp,css,eot,ttf,woff,woff2,eot,ttf,pdf,zip,rar,tar,gz,mp4,mp3,avi,webm,mkv,mov,flv,swf",
 	}
 	if cfg.Subs {
 		args = append(args, "--subs")

@@ -5,28 +5,38 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
 	"github.com/shii9/UrlShine/internal/utils"
 )
 
-// runXnLinkFinder collects URLs via xnLinkFinder.
+// runXnLinkFinder collects URLs via xnLinkFinder with aggressive parameters.
 func runXnLinkFinder(target, outDir string, cfg Config) ([]string, error) {
 	linksFile := filepath.Join(outDir, fmt.Sprintf("_xnlf_%s.txt", utils.SanitizeFilename(target)))
 	_ = os.Remove(linksFile)
+
+	depth := cfg.Depth
+	if depth < 2 {
+		depth = 2
+	}
+	if depth > 3 {
+		depth = 3
+	}
 
 	args := []string{
 		"xnLinkFinder",
 		"-i", target,
 		"-sf", target,
 		"-o", linksFile,
-		"-nwll", // no wordlist
+		"-d", fmt.Sprintf("%d", depth),
+		"-t", "15",
+		"-p", "10",
 		"-timeout", "30",
+		"-rl", "2",
 	}
-	if cfg.Depth > 0 {
-		depth := cfg.Depth
-		if depth > 3 {
-			depth = 3
-		}
-		args = append(args, "-d", fmt.Sprintf("%d", depth))
+	if cfg.Threads < 5 {
+		args = append(args, "-mtl", "5")
+	} else {
+		args = append(args, "-mtl", fmt.Sprintf("%d", cfg.Threads/10))
 	}
 
 	_, _ = runCmd(args...)
