@@ -50,20 +50,10 @@ var rootCmd = &cobra.Command{
 URL enumeration tools into a unified workflow. It collects URLs from passive and active
 sources, deduplicates results, categorizes findings by attack vector, and verifies live hosts.
 
-Key features:
-  • Concurrent execution of 9 URL collection tools
-  • Intelligent URL deduplication and normalization  
-  • Automatic categorization into 5 attack vectors
-  • Live host verification with status codes
-  • Professional HTML, JSON, and Markdown reports
-
 Use --all (or -a) to run every collector.
 Use --complete (or -c) to run the full processing pipeline.
 
-For detailed examples and usage scenarios, see: https://github.com/shii9/UrlShine#-usage-guide--practical-examples`,
-	Example: `  urlshine -a google.com
-  urlshine -a -c google.com
-  urlshine doctor`,
+For detailed usage and scenarios, see: https://github.com/shii9/UrlShine#-usage-guide--practical-examples`,
 	Args: cobra.ArbitraryArgs, // Accept domains as positional arguments
 	RunE: func(cmd *cobra.Command, args []string) error {
 		targets, err := resolveTargets(args, flagFile)
@@ -165,8 +155,8 @@ func init() {
 	rootCmd.SetHelpFunc(func(cmd *cobra.Command, args []string) {
 		fmt.Printf(`
 ╔════════════════════════════════════════════════════════════════════════════╗
-║                         URLShine v%s                                      ║
-║       Professional URL Enumeration & Attack Surface Mapper                ║
+║                               URLShine v%s                                 ║
+║       Professional URL Enumeration & Attack Surface Mapper                 ║
 ╚════════════════════════════════════════════════════════════════════════════╝
 
 USAGE
