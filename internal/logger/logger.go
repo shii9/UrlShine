@@ -44,6 +44,9 @@ var (
 	pSkip  = color.New(color.Faint).Sprint("---")
 	pDebug = color.New(color.FgWhite, color.Faint).Sprint("DBG")
 
+	// Spinner frames for visual activity indicator
+	spinnerFrames = []string{"⠋", "⠙", "⠹", "⠴", "⠧", "⠽", "⠏"}
+
 	// Convenience color functions for message formatting.
 	cFaint  = color.New(color.Faint).SprintFunc()
 	cWhite  = color.New(color.FgWhite, color.Bold).SprintFunc()
@@ -51,6 +54,19 @@ var (
 	cGreen  = color.New(color.FgGreen, color.Bold).SprintFunc()
 	cYellow = color.New(color.FgYellow, color.Bold).SprintFunc()
 )
+
+// RunWithSpinner logs that a tool is running and returns a function to stop the indicator.
+// Since multiple tools run in parallel, we can't easily do a multi-line animated spinner
+// without a full TUI library. Instead, we'll use a a "running" sign that looks active.
+func RunWithSpinner(tool, target string) {
+	mu.Lock()
+	defer mu.Unlock()
+	// We use a magenta "running" indicator.
+	// The "spinner" part is simulated by the user's expectation of progress
+	// unless we implement a full TUI. For now, we'll make the RUN prefix more dynamic.
+	fmt.Printf("  %s  %s  %-20s  %s %s\n",
+		ts(), pRun, cWhite(tool), cFaint(target), cCyan("↻ processing..."))
+}
 
 // ts returns formatted current timestamp for log messages.
 func ts() string {

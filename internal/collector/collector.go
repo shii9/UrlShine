@@ -3,10 +3,12 @@ package collector
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os/exec"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/shii9/UrlShine/internal/logger"
 	"github.com/shii9/UrlShine/internal/utils"
@@ -134,7 +136,7 @@ func RunAll(targets []string, rawDir string, cfg Config) ([]string, error) {
 		mu             sync.Mutex
 		outFiles       []string
 		wg             sync.WaitGroup
-		sem            = make(chan struct{}, 10) // max 10 concurrent tool executions for aggressive parallelism
+		sem            = make(chan struct{}, cfg.Threads) // scale concurrency based on user configuration
 		completedJobs  = 0
 		targetProgress = make(map[string]int)
 	)
@@ -160,7 +162,7 @@ func RunAll(targets []string, rawDir string, cfg Config) ([]string, error) {
 				return
 			}
 
-			logger.Run("%-20s → %s", j.tool.name, j.target)
+			logger.RunWithSpinner(j.tool.name, j.target)
 			lines, err := j.tool.fn(j.target, rawDir, cfg)
 			if err != nil {
 				logger.Warn("%-20s [%s] failed", j.tool.name, j.target)
@@ -171,11 +173,16 @@ func RunAll(targets []string, rawDir string, cfg Config) ([]string, error) {
 				return
 			}
 
-			// Keep only HTTP/HTTPS
-			clean := make([]string, 0, len(lines))
+			// Deduplicate and keep only HTTP/HTTPS
+			unique := make(map[string]struct{})
+			clean := make([]string, 0)
 			for _, l := range lines {
-				if strings.HasPrefix(l, "http://") || strings.HasPrefix(l, "https://") {
-					clean = append(clean, l)
+				l = strings.TrimSpace(l)
+				if (strings.HasPrefix(l, "http://") || strings.HasPrefix(l, "https://")) && l != "" {
+					if _, ok := unique[l]; !ok {
+						unique[l] = struct{}{}
+						clean = append(clean, l)
+					}
 				}
 			}
 
@@ -207,7 +214,12 @@ func RunAll(targets []string, rawDir string, cfg Config) ([]string, error) {
 
 func runCmd(args ...string) ([]string, error) {
 	logger.Debug("Exec: %s", strings.Join(args, " "))
-	cmd := exec.Command(args[0], args[1:]...)
+
+	// Use a 2-minute timeout for each command to prevent hangs
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, args[0], args[1:]...)
 	// cmd.Stderr = os.Stderr // Optional: uncomment for verbose stderr logging
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
