@@ -147,7 +147,7 @@ func init() {
 	rootCmd.SetHelpFunc(func(cmd *cobra.Command, args []string) {
 		fmt.Printf(`
 ╔════════════════════════════════════════════════════════════════════════════╗
-║                             URLShine v%s                                 ║
+║                             URLShine v%s                                   ║
 ║       Professional URL Enumeration & Attack Surface Mapper                 ║
 ╚════════════════════════════════════════════════════════════════════════════╝
 
