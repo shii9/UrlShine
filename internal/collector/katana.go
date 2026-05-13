@@ -1,7 +1,5 @@
 package collector
 
-import "fmt"
-
 // runKatana collects URLs via Katana with professional aggressive parameters.
 // Uses multiple command variations to maximize URL discovery:
 // - High concurrency crawling
@@ -10,32 +8,33 @@ import "fmt"
 // - Multi-depth traversal
 // - Subdomain scope coverage
 func runKatana(target, _ string, cfg Config) ([]string, error) {
-	depth := cfg.Depth
-	if depth < 3 {
-		depth = 3
-	}
-	crawlWorkers := cfg.Threads
-	if crawlWorkers < 50 {
-		crawlWorkers = 50
+	target = ensureHTTPS(target)
+	var allUrls []string
+
+	// Professional bug hunter command sequences to maximize coverage
+	commands := [][]string{
+		// 1. Deep Crawl + JS Parsing
+		{"katana", "-u", target, "-d", "5", "-jc", "-kf", "all", "-silent"},
+		// 2. Headless JS Rendering (Extracts XHR and browser-rendered content)
+		{"katana", "-u", target, "-headless", "-d", "4", "-jc", "-xhr", "-jsonl", "-silent"},
+		// 3. Root Domain + Subdomains scope
+		{"katana", "-u", target, "-fs", "rdn", "-d", "4", "-jc", "-silent"},
+		// 4. Query Parameter Focus
+		{"katana", "-u", target, "-f", "qurl", "-silent"},
+		// 5. Asset/Endpoint Filter (JS, JSON, JSP, no-extension)
+		{"katana", "-u", target, "-d", "5", "-jc", "-em", "js,jsp,json,none", "-ndef", "-silent"},
+		// 6. Basic Fast Pass
+		{"katana", "-u", target, "-d", "3", "-silent"},
 	}
 
-	// Professional bug hunter combination: JS crawling + high concurrency + deep traversal
-	args := []string{
-		"katana",
-		"-u", ensureHTTPS(target),
-		"-d", fmt.Sprintf("%d", depth),
-		"-c", fmt.Sprintf("%d", crawlWorkers),
-		"-js-crawl",           // Execute JavaScript to discover dynamic URLs
-		"-iqp",                // Include query parameters in output
-		"-crawl-scope", "all", // Crawl all scopes (in-scope + out-of-scope)
-		"-aff",      // Allow all file formats
-		"-no-color", // Clean output
-		"-silent",   // No progress messages
-	}
-	if cfg.Subs {
-		args = append(args, "-subdomains")
+	for _, args := range commands {
+		lines, err := runCmd(args...)
+		if err != nil {
+			// Log error but continue with other commands to gather as much as possible
+			continue
+		}
+		allUrls = append(allUrls, lines...)
 	}
 
-	// Run with stdout capture
-	return runCmd(args...)
+	return allUrls, nil
 }

@@ -10,36 +10,39 @@ import (
 
 // runWaymore collects URLs via Waymore with aggressive mode 3 and targeted filters.
 func runWaymore(target, outDir string, cfg Config) ([]string, error) {
-	conc := 50
-	if cfg.Threads > 100 {
-		conc = 100
+	var allUrls []string
+
+	// Professional bug hunter command sequences to maximize coverage
+	commands := [][]string{
+		// 1. Main Deep Recon
+		{"waymore", "-i", target, "-mode", "B", "-oU"},
+		// 2. Historical Discovery (Deep sweep with all Common Crawl collections)
+		{"waymore", "-i", target, "-mode", "B", "-from", "2010", "-to", "202512", "-lcc", "0", "-oU"},
+		// 3. High-Value Target Filtering (API, Auth, Admin, etc.)
+		{"waymore", "-i", target, "-mode", "B", "-ko", "api|auth|admin|user|v1|v2", "-oU"},
+		// 4. Response Code Filter
+		{"waymore", "-i", target, "-mode", "B", "-fc", "200,301,302,403", "-oU"},
 	}
 
-	outFile := filepath.Join(outDir, fmt.Sprintf("waymore_%s.txt", utils.SanitizeFilename(target)))
-	_ = os.Remove(outFile)
+	for i, args := range commands {
+		// Waymore requires a file path for -oU
+		tmpFile := filepath.Join(outDir, fmt.Sprintf("_waymore_%s_%d.txt", utils.SanitizeFilename(target), i))
+		fullArgs := append(args, tmpFile)
 
-	args := []string{
-		"waymore",
-		"-i", target,
-		"-mode", "3",
-		"-p",
-		"-formatted",
-		"-exclude", "png,jpg,jpeg,gif,bmp,svg,ico,webp,css,woff,woff2,eot,ttf,pdf,zip,rar,tar,gz,mp4,mp3,avi,webm,mkv,mov,flv,swf,wma,wav",
-		"-include", "api,auth,admin,user,v1,v2,v3,endpoint,callback,redirect",
-		"-concurrency", fmt.Sprintf("%d", conc),
-		"-oU", outFile,
+		_, err := runCmd(fullArgs...)
+		if err != nil {
+			continue
+		}
+
+		// Read the resulting file
+		lines, err := utils.ReadLines(tmpFile)
+		if err == nil {
+			allUrls = append(allUrls, lines...)
+		}
+
+		// Cleanup tmp file
+		os.Remove(tmpFile)
 	}
 
-	lines, err := runCmd(args...)
-	if err == nil && len(lines) > 0 {
-		return lines, nil
-	}
-
-	// Try to read output file if command succeeded
-	if utils.FileExists(outFile) {
-		lines, _ := utils.ReadLines(outFile)
-		return lines, nil
-	}
-
-	return nil, err
+	return allUrls, nil
 }

@@ -1,40 +1,43 @@
 package collector
 
-import (
-	"fmt"
-	"os"
-	"path/filepath"
-
-	"github.com/shii9/UrlShine/internal/utils"
-)
+import "fmt"
 
 // runGAU collects URLs via gau with aggressive parameters using multiple providers and options.
-func runGAU(target, outDir string, cfg Config) ([]string, error) {
+func runGAU(target, _ string, cfg Config) ([]string, error) {
 	threads := cfg.Threads
-	if threads < 100 {
-		threads = 100
+	if threads < 10 {
+		threads = 10
 	}
 
-	outFile := filepath.Join(outDir, fmt.Sprintf("gau_%s.txt", utils.SanitizeFilename(target)))
-	_ = os.Remove(outFile)
+	var allUrls []string
 
-	// Run GAU with comprehensive parameters
-	args := []string{
-		"gau", target,
-		"--threads", fmt.Sprintf("%d", threads),
-		"--providers", "wayback,commoncrawl,urlscan,otx",
-		"--blacklist", "png,jpg,jpeg,gif,bmp,svg,ico,webp,css,eot,ttf,woff,woff2,pdf,zip,rar,tar,gz,mp4,mp3,avi,webm,mkv,mov,flv,swf,wma,wav,aac,flac,m4a,ogg,webm,3gp,mkv,mov,mp4,mpeg,mpg,wmv,avi,m3u8,m3u,pls",
-	}
-	if cfg.Subs {
-		args = append(args, "--subs")
+	// Professional bug hunter command sequences to maximize coverage
+	commands := [][]string{
+		// 1. Full Coverage Baseline
+		{"gau", target, "--providers", "wayback,commoncrawl,otx,urlscan", "--threads", fmt.Sprintf("%d", threads)},
+		// 2. Static Asset Filter
+		{"gau", target, "--blacklist", "png,jpg,gif,svg,woff,ttf,css,js"},
+		// 3. Deep Historical Sweep
+		{"gau", target, "--from", "201801", "--to", "202312", "--providers", "wayback,commoncrawl,otx,urlscan"},
+		// 4. Live Status Filter
+		{"gau", target, "--mc", "200,301,302,403"},
+		// 5. Parameterized URLs (duplicates filtered via --fp)
+		{"gau", target, "--fp"},
 	}
 
-	lines, err := runCmd(args...)
-	if err == nil && len(lines) > 0 {
-		if err := utils.WriteLines(outFile, lines); err != nil {
-			return lines, nil
+	for _, args := range commands {
+		if cfg.Subs {
+			// Add --subs to every command if subdomains are requested
+			args = append(args, "--subs")
 		}
+
+		lines, err := runCmd(args...)
+		if err != nil {
+			// Log error but continue to gather as much as possible
+			continue
+		}
+		allUrls = append(allUrls, lines...)
 	}
 
-	return lines, nil
+	return allUrls, nil
 }

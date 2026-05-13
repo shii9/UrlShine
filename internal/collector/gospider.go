@@ -12,35 +12,39 @@ import (
 
 // runGospider collects URLs via gospider with aggressive parameters.
 func runGospider(target, outDir string, cfg Config) ([]string, error) {
-	tmpOut := filepath.Join(outDir, "_gospider_"+utils.SanitizeFilename(target))
-	_ = os.MkdirAll(tmpOut, 0755)
+	target = ensureHTTPS(target)
+	var allUrls []string
 
-	// Set aggressive concurrency
-	concurrency := cfg.Threads
-	if concurrency < 30 {
-		concurrency = 30
-	}
-	depth := cfg.Depth
-	if depth < 3 {
-		depth = 3
-	}
-
-	args := []string{
-		"gospider",
-		"-s", ensureHTTPS(target),
-		"-c", fmt.Sprintf("%d", concurrency),
-		"-d", fmt.Sprintf("%d", depth),
-		"-o", tmpOut,
-		"--js", "--sitemap", "--robots", "--other-source",
-		"-a", "-w", "-r",
-		"--blacklist", `\.(png|jpg|jpeg|gif|bmp|svg|ico|webp|css|woff|woff2|eot|ttf|pdf|zip|rar|tar|gz|mp4|mp3|avi|webm|mkv|mov|flv|swf)$`,
-	}
-	if cfg.Subs {
-		args = append(args, "--subs")
+	// Professional bug hunter command sequences to maximize coverage
+	commands := [][]string{
+		// 1. Broad Discovery (Baseline)
+		{"gospider", "-s", target, "-c", "20", "-d", "3", "--subs", "--other-source", "--include-subs", "--include-other-source", "--sitemap", "--robots", "--js", "-q"},
+		// 2. Deep Crawl (Infinite recursion)
+		{"gospider", "-s", target, "-c", "30", "-d", "0", "--subs", "--other-source", "--include-subs", "--include-other-source", "--sitemap", "--robots", "--js", "-q"},
+		// 3. Fast Third-Party Expansion
+		{"gospider", "-s", target, "-c", "20", "-d", "1", "--other-source", "--include-subs", "--include-other-source", "-q"},
+		// 4. Focused Crawl (Static Asset Filtered)
+		{"gospider", "-s", target, "-c", "20", "-d", "3", "--subs", "--other-source", "--include-subs", "--include-other-source", "--blacklist", `\.(png|jpg|jpeg|gif|css|svg|woff|woff2|ttf|ico)$`, "-q"},
 	}
 
-	_, _ = runCmd(args...)
-	return gospiderParseDir(tmpOut)
+	for i, args := range commands {
+		// Create unique tmp dir for each run to avoid file conflicts
+		tmpOut := filepath.Join(outDir, fmt.Sprintf("_gospider_%s_%d", utils.SanitizeFilename(target), i))
+		_ = os.MkdirAll(tmpOut, 0755)
+
+		_, _ = runCmd(args...)
+
+		// Parse results from this run
+		lines, err := gospiderParseDir(tmpOut)
+		if err == nil {
+			allUrls = append(allUrls, lines...)
+		}
+
+		// Cleanup tmp dir after parsing
+		os.RemoveAll(tmpOut)
+	}
+
+	return allUrls, nil
 }
 
 func gospiderParseDir(dir string) ([]string, error) {
