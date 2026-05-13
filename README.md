@@ -308,30 +308,6 @@ ls /tmp/audit_results/
 
 ---
 
-### Workflow: From Discovery to Exploitation
-
-```bash
-# 1. Discover all endpoints
-urlshine -a -c target.com
-
-# 2. Extract only live API endpoints
-cat urlshine_*/alive_api_endpoints.txt > apis.txt
-
-# 3. Test each API with custom tools
-while read api; do
-  echo "Testing: $api"
-  curl -s "$api" | head -20
-done < apis.txt
-
-# 4. Find endpoints with parameters
-cat urlshine_*/parameters_urls.txt > vulnerable_params.txt
-
-# 5. Fuzz the parameters
-# Use with your favorite fuzzer (wfuzz, ffuf, etc.)
-```
-
----
-
 ## 🔍 Understanding the Output Categories
 
 When you run `urlshine`, results are automatically split into 5 categories. Here's what each means:
