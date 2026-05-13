@@ -70,8 +70,6 @@ URLShine orchestrates a diverse set of engines categorized by their intelligence
 | **Katana** | Active Enumeration | Next-gen JS crawler with deep parameter extraction |
 | **GoSpider** | Active Enumeration | High-speed HTML/JS surface mapping |
 | **xnLinkFinder** | Passive Analysis | Precise JS link & config extraction |
-| **Gobuster** | Active Discovery | High-concurrency directory brute-forcing |
-| **Dirb** | Active Discovery | Comprehensive path enumeration |
 
 ---
 

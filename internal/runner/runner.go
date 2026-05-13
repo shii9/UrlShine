@@ -44,8 +44,6 @@ type Options struct {
 	RunWaymore      bool // Enable Waymore
 	RunWaybackurls  bool // Enable Wayback URLs
 	RunXnlinkfinder bool // Enable xnLinkFinder
-	RunGobuster     bool // Enable Gobuster
-	RunDirb         bool // Enable Dirb
 }
 
 // Run executes the URLShine reconnaissance pipeline.

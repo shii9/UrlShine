@@ -36,8 +36,6 @@ var (
 	flagWaymore      bool // Run Waymore
 	flagWaybackurls  bool // Run Wayback URLs
 	flagXnlinkfinder bool // Run xnLinkFinder
-	flagGobuster     bool // Run Gobuster
-	flagDirb         bool // Run Dirb
 )
 
 // rootCmd is the primary command entry point for URLShine.
@@ -86,8 +84,6 @@ For detailed usage and scenarios, see: https://github.com/shii9/UrlShine#-usage-
 			RunWaymore:      flagWaymore,
 			RunWaybackurls:  flagWaybackurls,
 			RunXnlinkfinder: flagXnlinkfinder,
-			RunGobuster:     flagGobuster,
-			RunDirb:         flagDirb,
 		})
 	},
 }
@@ -116,8 +112,6 @@ func normalizeFlags() {
 		"waybackurls": true,
 
 		"xnlinkfinder": true,
-		"gobuster":     true,
-		"dirb":         true,
 		"file":         true,
 		"output":       true,
 		"threads":      true,
@@ -183,10 +177,7 @@ COLLECTION TOOLS
   Active (Crawlers):
     -k, --katana             Advanced JS crawler
     -w, --gospider           HTML/JS crawler
-    -u, --gobuster           Directory brute-force
-    -i, --dirb               Dictionary enumeration
 
-PERFORMANCE OPTIONS
 
   -t, --threads INT          Parallel workers (default: 50, range: 1-500)
   -d, --depth INT            Crawl depth for active tools (default: 5)
@@ -236,8 +227,6 @@ DOCUMENTATION
 	f.BoolVarP(&flagWaymore, "waymore", "m", false, "Run Waymore")
 	f.BoolVarP(&flagWaybackurls, "waybackurls", "b", false, "Run Waybackurls")
 	f.BoolVarP(&flagXnlinkfinder, "xnlinkfinder", "x", false, "Run xnLinkFinder")
-	f.BoolVarP(&flagGobuster, "gobuster", "u", false, "Run Gobuster directory discovery")
-	f.BoolVarP(&flagDirb, "dirb", "i", false, "Run Dirb directory enumeration")
 
 	// Register subcommands
 	rootCmd.AddCommand(doctorCmd)

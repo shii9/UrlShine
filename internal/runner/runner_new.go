@@ -27,8 +27,6 @@ var toolOutputNames = map[string]string{
 	"waymore":      "waymore.txt",
 	"waybackurls":  "waybackurls.txt",
 	"xnLinkFinder": "xnlinkfinder.txt",
-	"gobuster":     "gobuster.txt",
-	"dirb":         "dirb.txt",
 }
 
 // RunProfessional executes collection and, when requested, the complete processing pipeline.
@@ -69,8 +67,6 @@ func RunProfessional(opts Options) error {
 		RunWaymore:      opts.RunWaymore,
 		RunWaybackurls:  opts.RunWaybackurls,
 		RunXnlinkfinder: opts.RunXnlinkfinder,
-		RunGobuster:     opts.RunGobuster,
-		RunDirb:         opts.RunDirb,
 	}
 
 	logger.Info("")

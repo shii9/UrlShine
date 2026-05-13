@@ -26,8 +26,6 @@ type Config struct {
 	RunWaymore      bool
 	RunWaybackurls  bool
 	RunXnlinkfinder bool
-	RunGobuster     bool
-	RunDirb         bool
 }
 
 // DefaultConfig returns production-ready defaults optimized for aggressive collection.
@@ -57,10 +55,6 @@ var allTools = []tool{
 	// Active Crawlers (moderate traffic, high quality results)
 	{"katana", runKatana},     // Advanced JS-capable crawler
 	{"gospider", runGospider}, // HTML, sitemap, robots, JS
-
-	// Brute-Force Discovery (higher traffic, completes last)
-	{"gobuster", runGobuster}, // Directory & DNS brute-force
-	{"dirb", runDirb},         // Dictionary-based discovery
 }
 
 // RunAll executes every installed tool against every target concurrently.
@@ -89,10 +83,6 @@ func RunAll(targets []string, rawDir string, cfg Config) ([]string, error) {
 
 			case "xnLinkFinder":
 				selected = cfg.RunXnlinkfinder
-			case "gobuster":
-				selected = cfg.RunGobuster
-			case "dirb":
-				selected = cfg.RunDirb
 			}
 		}
 
