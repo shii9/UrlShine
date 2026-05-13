@@ -25,7 +25,6 @@ type Config struct {
 	RunKatana       bool
 	RunWaymore      bool
 	RunWaybackurls  bool
-	RunHakrawler    bool
 	RunXnlinkfinder bool
 	RunGobuster     bool
 	RunDirb         bool
@@ -56,9 +55,8 @@ var allTools = []tool{
 	{"xnLinkFinder", runXnLinkFinder}, // JS/HTML link extraction
 
 	// Active Crawlers (moderate traffic, high quality results)
-	{"katana", runKatana},       // Advanced JS-capable crawler
-	{"gospider", runGospider},   // HTML, sitemap, robots, JS
-	{"hakrawler", runHakrawler}, // HTML endpoint discovery
+	{"katana", runKatana},     // Advanced JS-capable crawler
+	{"gospider", runGospider}, // HTML, sitemap, robots, JS
 
 	// Brute-Force Discovery (higher traffic, completes last)
 	{"gobuster", runGobuster}, // Directory & DNS brute-force
@@ -88,8 +86,7 @@ func RunAll(targets []string, rawDir string, cfg Config) ([]string, error) {
 				selected = cfg.RunWaymore
 			case "waybackurls":
 				selected = cfg.RunWaybackurls
-			case "hakrawler":
-				selected = cfg.RunHakrawler
+
 			case "xnLinkFinder":
 				selected = cfg.RunXnlinkfinder
 			case "gobuster":

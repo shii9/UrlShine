@@ -43,7 +43,6 @@ type Options struct {
 	RunKatana       bool // Enable Katana
 	RunWaymore      bool // Enable Waymore
 	RunWaybackurls  bool // Enable Wayback URLs
-	RunHakrawler    bool // Enable Hakrawler
 	RunXnlinkfinder bool // Enable xnLinkFinder
 	RunGobuster     bool // Enable Gobuster
 	RunDirb         bool // Enable Dirb
@@ -83,7 +82,6 @@ func Run(opts Options) error {
 			RunKatana:       opts.RunKatana,
 			RunWaymore:      opts.RunWaymore,
 			RunWaybackurls:  opts.RunWaybackurls,
-			RunHakrawler:    opts.RunHakrawler,
 			RunXnlinkfinder: opts.RunXnlinkfinder,
 		}
 		_, err := collector.RunAll(opts.Targets, rawDir, cfg)

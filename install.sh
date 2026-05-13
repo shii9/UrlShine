@@ -65,7 +65,6 @@ go_install "gau"         "github.com/lc/gau/v2/cmd/gau@latest"
 go_install "gospider"    "github.com/jaeles-project/gospider@latest"
 go_install "katana"      "github.com/projectdiscovery/katana/cmd/katana@latest"
 go_install "waybackurls" "github.com/tomnomnom/waybackurls@latest"
-go_install "hakrawler"   "github.com/hakluke/hakrawler@latest"
 go_install "gobuster"    "github.com/OJ/gobuster/v3@latest"
 go_install "httpx"       "github.com/projectdiscovery/httpx/cmd/httpx@latest"
 

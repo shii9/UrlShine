@@ -26,7 +26,6 @@ var toolOutputNames = map[string]string{
 	"katana":       "katana.txt",
 	"waymore":      "waymore.txt",
 	"waybackurls":  "waybackurls.txt",
-	"hakrawler":    "hakrawler.txt",
 	"xnLinkFinder": "xnlinkfinder.txt",
 	"gobuster":     "gobuster.txt",
 	"dirb":         "dirb.txt",
@@ -69,7 +68,6 @@ func RunProfessional(opts Options) error {
 		RunKatana:       opts.RunKatana,
 		RunWaymore:      opts.RunWaymore,
 		RunWaybackurls:  opts.RunWaybackurls,
-		RunHakrawler:    opts.RunHakrawler,
 		RunXnlinkfinder: opts.RunXnlinkfinder,
 		RunGobuster:     opts.RunGobuster,
 		RunDirb:         opts.RunDirb,
@@ -216,7 +214,7 @@ func printOutputSummary(opts Options, start time.Time, complete bool) {
 	logger.Info("")
 	logger.Info("Files generated per domain:")
 	logger.Info("  Per-tool results: gau.txt, katana.txt, gospider.txt, waymore.txt, waybackurls.txt")
-	logger.Info("                    hakrawler.txt, xnlinkfinder.txt, gobuster.txt, dirb.txt")
+	logger.Info("                    xnlinkfinder.txt, gobuster.txt, dirb.txt")
 	if complete {
 		logger.Info("  Complete outputs: merged_urls.txt, normalized_urls.txt, api_urls.txt")
 		logger.Info("                    auth_admin_urls.txt, params_urls.txt, js_config_urls.txt")
@@ -272,7 +270,6 @@ func mergeToolsForTarget(targetDir, outFile string) (int, error) {
 		"gospider.txt",
 		"waymore.txt",
 		"waybackurls.txt",
-		"hakrawler.txt",
 		"xnlinkfinder.txt",
 		"gobuster.txt",
 		"dirb.txt",

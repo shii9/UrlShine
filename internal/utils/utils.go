@@ -38,7 +38,6 @@ func CheckDependencies() []ToolStatus {
 		{Name: "gospider", InstallCmd: "go install github.com/jaeles-project/gospider@latest", Required: false},
 		{Name: "waymore", InstallCmd: "pip3 install waymore", Required: false},
 		{Name: "waybackurls", InstallCmd: "go install github.com/tomnomnom/waybackurls@latest", Required: false},
-		{Name: "hakrawler", InstallCmd: "go install github.com/hakluke/hakrawler@latest", Required: false},
 		{Name: "xnlinkfinder", InstallCmd: "pip3 install xnlinkfinder", Required: false},
 		{Name: "gobuster", InstallCmd: "go install github.com/OJ/gobuster/v3@latest", Required: false},
 		{Name: "dirb", InstallCmd: "apt-get install dirb (Linux) | brew install dirb (macOS)", Required: false},

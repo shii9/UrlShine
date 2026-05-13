@@ -15,7 +15,6 @@ var tools = map[string]string{
 	"gospider":     "github.com/jaeles-project/gospider@latest",
 	"waymore":      "waymore",
 	"waybackurls":  "github.com/tomnomnom/waybackurls@latest",
-	"hakrawler":    "github.com/hakluke/hakrawler@latest",
 	"xnLinkFinder": "xnlinkfinder",
 	"gobuster":     "github.com/OJ/gobuster/v3@latest",
 	"httpx":        "github.com/projectdiscovery/httpx/cmd/httpx@latest",

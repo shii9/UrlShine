@@ -34,7 +34,6 @@ for %%T in ("gau:github.com/lc/gau/v2/cmd/gau@latest" ^
            "gospider:github.com/jaeles-project/gospider@latest" ^
            "katana:github.com/projectdiscovery/katana/cmd/katana@latest" ^
            "waybackurls:github.com/tomnomnom/waybackurls@latest" ^
-           "hakrawler:github.com/hakluke/hakrawler@latest" ^
            "gobuster:github.com/OJ/gobuster/v3@latest" ^
            "httpx:github.com/projectdiscovery/httpx/cmd/httpx@latest") do (
     for /f "tokens=1,2 delims=:" %%A in ("%%T") do (

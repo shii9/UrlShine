@@ -47,7 +47,7 @@ func runDoctor() {
 
 	// Categorize tools
 	passiveTools := []string{"gau", "waymore", "waybackurls", "xnlinkfinder"}
-	activeTools := []string{"katana", "gospider", "hakrawler", "gobuster", "dirb"}
+	activeTools := []string{"katana", "gospider", "gobuster", "dirb"}
 	utilityTools := []string{"httpx"}
 
 	var installedPassive, installedActive, installedUtil int

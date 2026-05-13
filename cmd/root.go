@@ -35,7 +35,6 @@ var (
 	flagKatana       bool // Run Katana
 	flagWaymore      bool // Run Waymore
 	flagWaybackurls  bool // Run Wayback URLs
-	flagHakrawler    bool // Run Hakrawler
 	flagXnlinkfinder bool // Run xnLinkFinder
 	flagGobuster     bool // Run Gobuster
 	flagDirb         bool // Run Dirb
@@ -86,7 +85,6 @@ For detailed usage and scenarios, see: https://github.com/shii9/UrlShine#-usage-
 			RunKatana:       flagKatana,
 			RunWaymore:      flagWaymore,
 			RunWaybackurls:  flagWaybackurls,
-			RunHakrawler:    flagHakrawler,
 			RunXnlinkfinder: flagXnlinkfinder,
 			RunGobuster:     flagGobuster,
 			RunDirb:         flagDirb,
@@ -109,14 +107,14 @@ func Execute() {
 func normalizeFlags() {
 	// Map of known long flag names that users might try with single dash
 	longFlagNames := map[string]bool{
-		"all":          true,
-		"complete":     true,
-		"gau":          true,
-		"katana":       true,
-		"gospider":     true,
-		"waymore":      true,
-		"waybackurls":  true,
-		"hakrawler":    true,
+		"all":         true,
+		"complete":    true,
+		"gau":         true,
+		"katana":      true,
+		"gospider":    true,
+		"waymore":     true,
+		"waybackurls": true,
+
 		"xnlinkfinder": true,
 		"gobuster":     true,
 		"dirb":         true,
@@ -185,7 +183,6 @@ COLLECTION TOOLS
   Active (Crawlers):
     -k, --katana             Advanced JS crawler
     -w, --gospider           HTML/JS crawler
-    -r, --hakrawler          Content crawler
     -u, --gobuster           Directory brute-force
     -i, --dirb               Dictionary enumeration
 
@@ -238,7 +235,6 @@ DOCUMENTATION
 	f.BoolVarP(&flagKatana, "katana", "k", false, "Run Katana")
 	f.BoolVarP(&flagWaymore, "waymore", "m", false, "Run Waymore")
 	f.BoolVarP(&flagWaybackurls, "waybackurls", "b", false, "Run Waybackurls")
-	f.BoolVarP(&flagHakrawler, "hakrawler", "r", false, "Run Hakrawler")
 	f.BoolVarP(&flagXnlinkfinder, "xnlinkfinder", "x", false, "Run xnLinkFinder")
 	f.BoolVarP(&flagGobuster, "gobuster", "u", false, "Run Gobuster directory discovery")
 	f.BoolVarP(&flagDirb, "dirb", "i", false, "Run Dirb directory enumeration")

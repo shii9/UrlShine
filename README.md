@@ -69,7 +69,6 @@ URLShine orchestrates a diverse set of engines categorized by their intelligence
 | **Waybackurls** | Passive Archive | Rapid archival endpoint extraction |
 | **Katana** | Active Enumeration | Next-gen JS crawler with deep parameter extraction |
 | **GoSpider** | Active Enumeration | High-speed HTML/JS surface mapping |
-| **Hakrawler** | Active Enumeration | Fast content crawling with header analysis |
 | **xnLinkFinder** | Passive Analysis | Precise JS link & config extraction |
 | **Gobuster** | Active Discovery | High-concurrency directory brute-forcing |
 | **Dirb** | Active Discovery | Comprehensive path enumeration |
@@ -161,7 +160,7 @@ urlshine -gau -waymore -waybackurls -xnlinkfinder -c target.com
 Uses only live crawlers for maximum endpoint discovery:
 
 ```bash
-urlshine -katana -gospider -hakrawler -c target.com -d 5
+urlshine -katana -gospider -c target.com -d 5
 ```
 **What it does:**
 - Actively crawls the website and follows links
