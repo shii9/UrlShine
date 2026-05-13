@@ -118,6 +118,31 @@ urlshine -a -c google.com # Run full enumeration pipeline
 ```bash
 urlshine doctor    # Verify all dependencies are installed
 ```
+---
+
+## 🛠️ CLI Reference
+
+### Operational Logic
+```bash
+-a, --all                 Execute all enumeration engines (Default)
+-c, --complete            Full Intelligence Pipeline: Collect $\rightarrow$ Normalize $\rightarrow$ Categorize $\rightarrow$ Verify
+```
+
+### Performance Tuning
+```bash
+-t, --threads INT         Concurrent workers (Default: 50, Max: 500)
+-d, --depth INT           Crawling depth for active engines (Default: 3)
+-f, --file FILE           Target list (One per line)
+-o, --output DIR          Custom output directory
+-s, --subs                Include subdomains (Default: true)
+-v, --verbose             Enable debug-level telemetry
+```
+
+### Pipeline Overrides
+```bash
+--no-alive                Bypass live host verification
+--skip-collect            Bypass collection; process existing raw data
+```
 
 ---
 
@@ -331,32 +356,6 @@ When you run `urlshine`, results are automatically split into 5 categories. Here
 | **Aggressive** | High threads, deep crawl | `urlshine -a -c -t 150 -d 5 target.com` |
 | **Enterprise** | Maximum parallelization | `urlshine -a -c -t 200 -d 5 -f targets.txt` |
 | **Stealthy** | Low threads, passive | `urlshine -gau -t 20 target.com` |
-
----
-
-## 🛠️ CLI Reference
-
-### Operational Logic
-```bash
--a, --all                 Execute all enumeration engines (Default)
--c, --complete            Full Intelligence Pipeline: Collect $\rightarrow$ Normalize $\rightarrow$ Categorize $\rightarrow$ Verify
-```
-
-### Performance Tuning
-```bash
--t, --threads INT         Concurrent workers (Default: 50, Max: 500)
--d, --depth INT           Crawling depth for active engines (Default: 3)
--f, --file FILE           Target list (One per line)
--o, --output DIR          Custom output directory
--s, --subs                Include subdomains (Default: true)
--v, --verbose             Enable debug-level telemetry
-```
-
-### Pipeline Overrides
-```bash
---no-alive                Bypass live host verification
---skip-collect            Bypass collection; process existing raw data
-```
 
 ---
 
