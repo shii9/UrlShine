@@ -81,13 +81,13 @@ URLShine processes collected URLs through an intelligent 5-stage pipeline:
 
 | Tool | Function | Purpose |
 |:---|:---|:---|
-| **Merger** | Combines output from all 6 collection tools into unified dataset per target | Consolidates Results |
-| **Normalizer** | Removes duplicates, normalizes parameters, fixes encoding inconsistencies | Standardizes URLs |
-| **Splitter** | Categorizes URLs into 5 attack vectors (APIs, Admin, Input, Leaks, Infrastructure) | Categorizes Intelligence |
-| **Extractor** | Extracts domains, subdomains, parameters, paths for deeper analysis | Intelligent Parsing |
-| **Reporter** | Creates actionable reports per target with vector prioritization | Generates Intelligence |
-| **Alive Checker** | Validates which endpoints are live/responsive for prioritized targeting | Verification Engine |
-| **Logger** | Tracks execution flow, tool status, and performance metrics | Operational Visibility |
+| --- | Combines output from all 6 collection tools into unified dataset per target | Consolidates Results |
+| --- | Removes duplicates, normalizes parameters, fixes encoding inconsistencies | Standardizes URLs |
+| --- | Categorizes URLs into 5 attack vectors (APIs, Admin, Input, Leaks, Infrastructure) | Categorizes Intelligence |
+| --- | Extracts domains, subdomains, parameters, paths for deeper analysis | Intelligent Parsing |
+| --- | Creates actionable reports per target with vector prioritization | Generates Intelligence |
+| **httpx** | Validates which endpoints are live/responsive for prioritized targeting | Alive Checker |
+| --- | Tracks execution flow, tool status, and performance metrics | Operational Visibility |
 
 ---
 
