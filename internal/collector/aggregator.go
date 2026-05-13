@@ -77,7 +77,7 @@ func MergeToolFiles(outputDir, mergedFile string) (int, error) {
 	var merged []string
 
 	// Only read .txt files that are tool results (not raw, not merged, not groups)
-	toolFiles := []string{"gau.txt", "katana.txt", "gospider.txt", "waymore.txt", "waybackurls.txt", "hakrawler.txt", "xnlinkfinder.txt"}
+	toolFiles := []string{"gau.txt", "katana.txt", "gospider.txt", "waymore.txt", "waybackurls.txt", "xnlinkfinder.txt"}
 
 	for _, toolFile := range toolFiles {
 		path := filepath.Join(outputDir, toolFile)
