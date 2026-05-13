@@ -62,14 +62,14 @@ Depending on the objective, URLShine can be deployed in different operational mo
 
 URLShine orchestrates a diverse set of engines categorized by their intelligence type:
 
-| Engine | Intel Type | Strategic Purpose |
-|:---|:---|:---|
-| **GAU** | Passive Archive | Massive historical URL aggregation |
-| **Waymore** | Passive Archive | Advanced Wayback Machine deep-scraping |
-| **Waybackurls** | Passive Archive | Rapid archival endpoint extraction |
-| **Katana** | Active Enumeration | Next-gen JS crawler with deep parameter extraction |
-| **GoSpider** | Active Enumeration | High-speed HTML/JS surface mapping |
-| **xnLinkFinder** | Passive Analysis | Precise JS link & config extraction |
+| Engine | Intel Type | Strategic Purpose | What It Does |
+|:---|:---|:---|:---|
+| **GAU** | Passive Archive | Massive historical URL aggregation | Aggregates URLs from Wayback Machine, CommonCrawl, URLScan, and OTX without direct target interaction |
+| **Waymore** | Passive Archive | Advanced Wayback Machine deep-scraping | Enhanced Wayback queries with custom filters for API endpoints, authentication paths, and admin sections |
+| **Waybackurls** | Passive Archive | Rapid archival endpoint extraction | Direct Wayback Machine access for fast historical endpoint discovery |
+| **Katana** | Active Enumeration | Next-gen JS crawler with deep parameter extraction | Advanced headless crawler with 6 professional command variants for maximum JS/parameter discovery (depth: 3-5) |
+| **GoSpider** | Active Enumeration | High-speed HTML/JS surface mapping | Rapid HTML/sitemap/robots.txt/JS enumeration with concurrent link extraction |
+| **xnLinkFinder** | Passive Analysis | Precise JS link & config extraction | Extracts URLs, endpoints, and secrets from JavaScript files and HTML source |
 
 ---
 
