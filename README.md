@@ -62,6 +62,8 @@ Depending on the objective, URLShine can be deployed in different operational mo
 
 URLShine orchestrates a diverse set of engines categorized by their intelligence type:
 
+### 📡 **URL Collection Tools** (External)
+
 | Engine | Intel Type | Strategic Purpose | What It Does |
 |:---|:---|:---|:---|
 | **GAU** | Passive Archive | Massive historical URL aggregation | Aggregates URLs from Wayback Machine, CommonCrawl, URLScan, and OTX without direct target interaction |
@@ -70,6 +72,22 @@ URLShine orchestrates a diverse set of engines categorized by their intelligence
 | **Katana** | Active Enumeration | Next-gen JS crawler with deep parameter extraction | Advanced headless crawler with 6 professional command variants for maximum JS/parameter discovery (depth: 3-5) |
 | **GoSpider** | Active Enumeration | High-speed HTML/JS surface mapping | Rapid HTML/sitemap/robots.txt/JS enumeration with concurrent link extraction |
 | **xnLinkFinder** | Passive Analysis | Precise JS link & config extraction | Extracts URLs, endpoints, and secrets from JavaScript files and HTML source |
+
+---
+
+### 🔧 **Processing Pipeline Tools** (Internal)
+
+URLShine processes collected URLs through an intelligent 5-stage pipeline:
+
+| Tool | Function | Purpose |
+|:---|:---|:---|
+| **Merger** | Consolidates Results | Combines output from all 6 collection tools into unified dataset per target |
+| **Normalizer** | Standardizes URLs | Removes duplicates, normalizes parameters, fixes encoding inconsistencies |
+| **Splitter** | Categorizes Intelligence | Categorizes URLs into 5 attack vectors (APIs, Admin, Input, Leaks, Infrastructure) |
+| **Extractor** | Intelligent Parsing | Extracts domains, subdomains, parameters, paths for deeper analysis |
+| **Reporter** | Generates Intelligence | Creates actionable reports per target with vector prioritization |
+| **Alive Checker** | Verification Engine | Validates which endpoints are live/responsive for prioritized targeting |
+| **Logger** | Operational Visibility | Tracks execution flow, tool status, and performance metrics |
 
 ---
 
