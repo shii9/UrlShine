@@ -1,20 +1,37 @@
 package collector
 
 import (
+	"fmt"
 	"sync"
 )
 
 // runKatana collects URLs via Katana with professional aggressive parameters.
+// Katana is an advanced JavaScript-capable crawler with headless Chromium support.
 func runKatana(target, _ string, cfg Config) ([]string, error) {
 	target = ensureHTTPS(target)
 
+	depth := cfg.Depth
+	if depth < 3 {
+		depth = 3
+	}
+
 	commands := [][]string{
-		{"katana", "-u", target, "-d", "5", "-jc", "-kf", "all", "-silent"},
-		{"katana", "-u", target, "-headless", "-d", "4", "-jc", "-xhr", "-jsonl", "-silent"},
-		{"katana", "-u", target, "-fs", "rdn", "-d", "4", "-jc", "-silent"},
+		// JS-aware deep crawl with all known field types
+		{"katana", "-u", target, "-d", fmt.Sprintf("%d", depth), "-jc", "-kf", "all", "-silent"},
+		// Headless browser mode for JS-heavy SPAs with XHR capture
+		{"katana", "-u", target, "-headless", "-d", fmt.Sprintf("%d", depth-1), "-jc", "-xhr", "-silent"},
+		// Field scope: root domain only (avoids third-party crawl noise)
+		{"katana", "-u", target, "-fs", "rdn", "-d", fmt.Sprintf("%d", depth-1), "-jc", "-silent"},
+		// Query URL extraction mode — finds URLs with parameters
 		{"katana", "-u", target, "-f", "qurl", "-silent"},
-		{"katana", "-u", target, "-d", "5", "-jc", "-em", "js,jsp,json,none", "-ndef", "-silent"},
+		// Extension match: JS, JSP, JSON, and no-extension endpoints
+		{"katana", "-u", target, "-d", fmt.Sprintf("%d", depth), "-jc", "-em", "js,jsp,json,php,aspx,none", "-ndef", "-silent"},
+		// Shallow but broad crawl for quick wins
 		{"katana", "-u", target, "-d", "3", "-silent"},
+		// Automatic form filling for discovering hidden endpoints
+		{"katana", "-u", target, "-d", fmt.Sprintf("%d", depth-1), "-aff", "-jc", "-silent"},
+		// Crawl with custom header for API discovery
+		{"katana", "-u", target, "-d", fmt.Sprintf("%d", depth), "-H", "Accept: application/json", "-jc", "-silent"},
 	}
 
 	var wg sync.WaitGroup

@@ -10,14 +10,29 @@ import (
 )
 
 var tools = map[string]string{
-	"gau":          "github.com/lc/gau/v2/cmd/gau@latest",
-	"katana":       "github.com/projectdiscovery/katana/cmd/katana@latest",
-	"gospider":     "github.com/jaeles-project/gospider@latest",
-	"waymore":      "waymore",
-	"waybackurls":  "github.com/tomnomnom/waybackurls@latest",
-	"xnLinkFinder": "xnlinkfinder",
-	"gobuster":     "github.com/OJ/gobuster/v3@latest",
-	"httpx":        "github.com/projectdiscovery/httpx/cmd/httpx@latest",
+	// Tier 1: Passive Archives
+	"gau":         "github.com/lc/gau/v2/cmd/gau@latest",
+	"waymore":     "waymore",
+	"waybackurls": "github.com/tomnomnom/waybackurls@latest",
+	"gauplus":     "github.com/bp0lr/gauplus@latest",
+	"paramspider": "git+https://github.com/devanshbatham/ParamSpider",
+
+	// Tier 2: Passive APIs & OSINT
+	"otxurls":          "github.com/lc/otxurls@latest",
+	"urlfinder":        "github.com/projectdiscovery/urlfinder/cmd/urlfinder@latest",
+	"github-endpoints": "github.com/gwen001/github-endpoints@latest",
+	"xnLinkFinder":     "xnlinkfinder",
+
+	// Tier 3: Active Crawlers
+	"katana":    "github.com/projectdiscovery/katana/cmd/katana@latest",
+	"gospider":  "github.com/jaeles-project/gospider@latest",
+	"hakrawler": "github.com/hakluke/hakrawler@latest",
+
+	// Tier 4: Active Brute-Force
+	"gobuster": "github.com/OJ/gobuster/v3@latest",
+
+	// Utility
+	"httpx": "github.com/projectdiscovery/httpx/cmd/httpx@latest",
 }
 
 // CheckAndInstall verifies if tools are installed and attempts installation if missing
@@ -42,7 +57,7 @@ func CheckAndInstall() {
 		return
 	}
 
-	fmt.Printf("\n%s Some tools are missing. Install now? [Y/n] ", yellow("!"))
+	fmt.Printf("\n%s Some tools are missing (%d tools). Install now? [Y/n] ", yellow("!"), len(missing))
 
 	// Auto-install if running in non-interactive mode or first run
 	// For now, show the command to install
@@ -53,6 +68,9 @@ func CheckAndInstall() {
 
 // isToolAvailable checks if a tool is available in PATH
 func isToolAvailable(tool string) bool {
+	if tool == "commoncrawl" {
+		return true // Built-in
+	}
 	_, err := exec.LookPath(tool)
 	return err == nil
 }

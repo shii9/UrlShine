@@ -19,24 +19,42 @@ type Config struct {
 	Threads int
 	Depth   int
 	Subs    bool
-	Timeout int // seconds
+	Timeout int // seconds per command
 
+	// Core tool selection (10 high-value, non-redundant tools)
 	RunAll          bool
 	RunGau          bool
-	RunGospider     bool
-	RunKatana       bool
 	RunWaymore      bool
-	RunWaybackurls  bool
+	RunParamspider  bool
+	RunCommoncrawl  bool
+	RunUrlfinder    bool
+	RunGithubEndpoints bool
 	RunXnlinkfinder bool
+	RunKatana       bool
+	RunHakrawler    bool
+	RunGobuster     bool
 }
 
 // DefaultConfig returns production-ready defaults optimized for aggressive collection.
-// Recommended for comprehensive attack surface mapping:
-// - Threads: 50 (can be increased to 100-150 for faster execution)
-// - Depth: 5 (balances thoroughness vs execution time)
-// - Timeout: 60s per tool (accounts for large target scans)
 func DefaultConfig() Config {
-	return Config{Threads: 50, Depth: 5, Subs: true, Timeout: 60, RunAll: true}
+	return Config{
+		Threads: 50,
+		Depth:   5,
+		Subs:    true,
+		Timeout: 300,
+
+		RunAll:             false,
+		RunGau:             true,
+		RunWaymore:         true,
+		RunParamspider:     true,
+		RunCommoncrawl:     true,
+		RunUrlfinder:       true,
+		RunGithubEndpoints: true,
+		RunXnlinkfinder:    true,
+		RunKatana:          true,
+		RunHakrawler:       true,
+		RunGobuster:        true,
+	}
 }
 
 // tool pairs a name with its execution function.
@@ -45,18 +63,30 @@ type tool struct {
 	fn   func(target, outDir string, cfg Config) ([]string, error)
 }
 
-// allTools defines the URL collection engines in optimal execution order.
-// Passive tools (archives) run first, then active crawlers, then brute-force tools.
+// allTools defines the 10 distinct, non-redundant URL collection engines in 4 operational tiers:
+//
+//   Tier 1 — Passive Archives (Wayback, CommonCrawl, OTX, URLScan, parameter mining)
+//   Tier 2 — Passive APIs & OSINT (Native CDX, crt.sh/VirusTotal, GitHub leaks, JS link finder)
+//   Tier 3 — Active Crawlers (Headless JS Chromium crawler, fast Go crawler)
+//   Tier 4 — Active Brute-Force (High-speed directory/file brute-force)
 var allTools = []tool{
-	// Passive URL Archives (fastest, no target interaction)
-	{"gau", runGAU},                   // Wayback, CommonCrawl, URLScan, OTX
-	{"waymore", runWaymore},           // Enhanced Wayback Machine queries
-	{"waybackurls", runWaybackurls},   // Pure Wayback Machine access
-	{"xnLinkFinder", runXnLinkFinder}, // JS/HTML link extraction
+	// ─── Tier 1: Passive Archives ─────────────────────────────────────────
+	{"gau", runGAU},                 // Wayback, CommonCrawl, URLScan, OTX
+	{"waymore", runWaymore},         // Enhanced Wayback Machine queries & response parsing
+	{"paramspider", runParamspider}, // Parameter-focused archive mining
 
-	// Active Crawlers (moderate traffic, high quality results)
-	{"katana", runKatana},     // Advanced JS-capable crawler
-	{"gospider", runGospider}, // HTML, sitemap, robots, JS
+	// ─── Tier 2: Passive APIs & OSINT ─────────────────────────────────────
+	{"commoncrawl", runCommoncrawl},         // Common Crawl CDX API (native Go, zero dependency)
+	{"urlfinder", runUrlfinder},             // crt.sh, VirusTotal, passive intel
+	{"github-endpoints", runGithubEndpoints}, // GitHub repository endpoint leaks
+	{"xnLinkFinder", runXnLinkFinder},       // JS/HTML link & endpoint extraction
+
+	// ─── Tier 3: Active Crawlers ──────────────────────────────────────────
+	{"katana", runKatana},       // Advanced JS-capable crawler (headless Chromium)
+	{"hakrawler", runHakrawler}, // Fast Go web crawler, HTML/JS parsing
+
+	// ─── Tier 4: Active Brute-Force ───────────────────────────────────────
+	{"gobuster", runGobuster}, // Fast multi-threaded directory/file brute-force
 }
 
 // RunAll executes every installed tool against every target concurrently.
@@ -74,33 +104,33 @@ func RunAll(targets []string, rawDir string, cfg Config) ([]string, error) {
 			switch t.name {
 			case "gau":
 				selected = cfg.RunGau
-			case "gospider":
-				selected = cfg.RunGospider
-			case "katana":
-				selected = cfg.RunKatana
 			case "waymore":
 				selected = cfg.RunWaymore
-			case "waybackurls":
-				selected = cfg.RunWaybackurls
-
+			case "paramspider":
+				selected = cfg.RunParamspider
+			case "commoncrawl":
+				selected = cfg.RunCommoncrawl
+			case "urlfinder":
+				selected = cfg.RunUrlfinder
+			case "github-endpoints":
+				selected = cfg.RunGithubEndpoints
 			case "xnLinkFinder":
 				selected = cfg.RunXnlinkfinder
+			case "katana":
+				selected = cfg.RunKatana
+			case "hakrawler":
+				selected = cfg.RunHakrawler
+			case "gobuster":
+				selected = cfg.RunGobuster
 			}
 		}
-
-		// If no tools were explicitly selected, but we are running (RunAll = false, and everything else false)
-		// default to all tools if we want, but the user explicitly wants only what they toggle.
-		// Wait, if NO tool flags are set, and --all is false, what happens?
-		// We'll assume the CLI defaults it to everything if no URL tools are specified. But let's just respect the flags.
 
 		if selected {
 			activeTools = append(activeTools, t)
 		}
 	}
 
-	// If the user provided NO url tools and didn't provide --all, they probably still want all tools if they passed domain?
-	// The prompt implies if they do "urlshine google.com", they want all default tools.
-	// We'll enforce this in RunAll: if activeTools is empty, use allTools.
+	// If no tools selected and --all not set, default to all tools
 	if len(activeTools) == 0 {
 		activeTools = allTools
 	}
@@ -136,7 +166,7 @@ func RunAll(targets []string, rawDir string, cfg Config) ([]string, error) {
 		mu             sync.Mutex
 		outFiles       []string
 		wg             sync.WaitGroup
-		sem            = make(chan struct{}, cfg.Threads) // scale concurrency based on user configuration
+		sem            = make(chan struct{}, cfg.Threads)
 		completedJobs  = 0
 		targetProgress = make(map[string]int)
 	)
@@ -215,12 +245,10 @@ func RunAll(targets []string, rawDir string, cfg Config) ([]string, error) {
 func runCmd(args ...string) ([]string, error) {
 	logger.Debug("Exec: %s", strings.Join(args, " "))
 
-	// Use a 2-minute timeout for each command to prevent hangs
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 
 	cmd := exec.CommandContext(ctx, args[0], args[1:]...)
-	// cmd.Stderr = os.Stderr // Optional: uncomment for verbose stderr logging
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err
@@ -250,7 +278,6 @@ func runCmdStdin(input string, args ...string) ([]string, error) {
 	logger.Debug("Exec(stdin): %s", strings.Join(args, " "))
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.Stdin = strings.NewReader(input)
-	// cmd.Stderr = os.Stderr
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err

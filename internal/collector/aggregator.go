@@ -67,6 +67,28 @@ func (ta *ToolAggregator) WriteToolFiles(outputDir string) map[string]int {
 	return counts
 }
 
+// allToolFileNames lists every per-tool output filename that could exist (10 tools).
+// This is the single source of truth for which tool files to merge.
+var allToolFileNames = []string{
+	// Tier 1: Passive Archives
+	"gau.txt",
+	"waymore.txt",
+	"paramspider.txt",
+
+	// Tier 2: Passive APIs & OSINT
+	"commoncrawl.txt",
+	"urlfinder.txt",
+	"github-endpoints.txt",
+	"xnlinkfinder.txt",
+
+	// Tier 3: Active Crawlers
+	"katana.txt",
+	"hakrawler.txt",
+
+	// Tier 4: Active Brute-Force
+	"gobuster.txt",
+}
+
 // MergeToolFiles merges all per-tool files into a single merged file.
 func MergeToolFiles(outputDir, mergedFile string) (int, error) {
 	if _, err := os.Stat(outputDir); err != nil {
@@ -76,10 +98,7 @@ func MergeToolFiles(outputDir, mergedFile string) (int, error) {
 	seen := make(map[string]struct{})
 	var merged []string
 
-	// Only read .txt files that are tool results (not raw, not merged, not groups)
-	toolFiles := []string{"gau.txt", "katana.txt", "gospider.txt", "waymore.txt", "waybackurls.txt", "xnlinkfinder.txt"}
-
-	for _, toolFile := range toolFiles {
+	for _, toolFile := range allToolFileNames {
 		path := filepath.Join(outputDir, toolFile)
 		if _, err := os.Stat(path); os.IsNotExist(err) {
 			continue // Skip if file doesn't exist

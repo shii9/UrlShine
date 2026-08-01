@@ -17,8 +17,32 @@ const scanBuf = 4 * 1024 * 1024 // 4 MB scanner buffer
 
 // ToolExists returns true if the named binary is found in PATH.
 func ToolExists(name string) bool {
+	// Special native tool: commoncrawl is built into UrlShine directly
+	if name == "commoncrawl" {
+		return true
+	}
+
 	_, err := exec.LookPath(name)
-	return err == nil
+	if err == nil {
+		return true
+	}
+	_, err = exec.LookPath(strings.ToLower(name))
+	if err == nil {
+		return true
+	}
+	if strings.ToLower(name) == "xnlinkfinder" {
+		_, err = exec.LookPath("xnLinkFinder")
+		if err == nil {
+			return true
+		}
+	}
+	if strings.ToLower(name) == "urlfinder" {
+		_, err = exec.LookPath("url-finder")
+		if err == nil {
+			return true
+		}
+	}
+	return false
 }
 
 // ToolStatus represents the status of a single tool.
@@ -32,16 +56,25 @@ type ToolStatus struct {
 // CheckDependencies verifies all required tools and returns their status.
 func CheckDependencies() []ToolStatus {
 	tools := []ToolStatus{
-		// Go-based tools
+		// Tier 1: Passive Archives
 		{Name: "gau", InstallCmd: "go install github.com/lc/gau/v2/cmd/gau@latest", Required: false},
-		{Name: "katana", InstallCmd: "go install github.com/projectdiscovery/katana/cmd/katana@latest", Required: false},
-		{Name: "gospider", InstallCmd: "go install github.com/jaeles-project/gospider@latest", Required: false},
 		{Name: "waymore", InstallCmd: "pip3 install waymore", Required: false},
-		{Name: "waybackurls", InstallCmd: "go install github.com/tomnomnom/waybackurls@latest", Required: false},
+		{Name: "paramspider", InstallCmd: "pip3 install git+https://github.com/devanshbatham/ParamSpider", Required: false},
+
+		// Tier 2: Passive APIs & OSINT
+		{Name: "commoncrawl", InstallCmd: "Built-in (Native Go)", Required: false},
+		{Name: "urlfinder", InstallCmd: "go install github.com/projectdiscovery/urlfinder/cmd/urlfinder@latest", Required: false},
+		{Name: "github-endpoints", InstallCmd: "go install github.com/gwen001/github-endpoints@latest", Required: false},
 		{Name: "xnlinkfinder", InstallCmd: "pip3 install xnlinkfinder", Required: false},
+
+		// Tier 3: Active Crawlers
+		{Name: "katana", InstallCmd: "go install github.com/projectdiscovery/katana/cmd/katana@latest", Required: false},
+		{Name: "hakrawler", InstallCmd: "go install github.com/hakluke/hakrawler@latest", Required: false},
+
+		// Tier 4: Active Brute-Force
 		{Name: "gobuster", InstallCmd: "go install github.com/OJ/gobuster/v3@latest", Required: false},
-		{Name: "dirb", InstallCmd: "apt-get install dirb (Linux) | brew install dirb (macOS)", Required: false},
-		// Optional but useful
+
+		// Utility
 		{Name: "httpx", InstallCmd: "go install github.com/projectdiscovery/httpx/cmd/httpx@latest", Required: false},
 	}
 

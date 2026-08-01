@@ -1,6 +1,4 @@
 // Package runner coordinates the full reconnaissance pipeline with per-tool tracking.
-// It orchestrates the 5-stage processing pipeline: collection, merging, normalization,
-// categorization, and live verification, with comprehensive logging at each stage.
 package runner
 
 import (
@@ -19,7 +17,6 @@ import (
 )
 
 // Options defines all configurable parameters for the reconnaissance pipeline.
-// This structure is populated from CLI flags and controls pipeline behavior.
 type Options struct {
 	// Target configuration
 	Targets   []string // List of domains/targets to scan
@@ -27,7 +24,7 @@ type Options struct {
 
 	// Performance tuning
 	Threads int  // Number of parallel threads (default: 50)
-	Depth   int  // Crawl depth for active tools (default: 3)
+	Depth   int  // Crawl depth for active tools (default: 5)
 	Subs    bool // Include subdomains in scans
 
 	// Pipeline control
@@ -36,18 +33,21 @@ type Options struct {
 	Verbose     bool // Enable verbose debug logging
 	RunComplete bool // Run full pipeline including post-collection processing
 
-	// Collection tool selection
-	RunAll          bool // Run all available tools
-	RunGau          bool // Enable GetAllUrls
-	RunGospider     bool // Enable GoSpider
-	RunKatana       bool // Enable Katana
-	RunWaymore      bool // Enable Waymore
-	RunWaybackurls  bool // Enable Wayback URLs
-	RunXnlinkfinder bool // Enable xnLinkFinder
+	// 10 Core tool selection
+	RunAll             bool // Run all 10 tools
+	RunGau             bool
+	RunWaymore         bool
+	RunParamspider     bool
+	RunCommoncrawl     bool
+	RunUrlfinder       bool
+	RunGithubEndpoints bool
+	RunXnlinkfinder    bool
+	RunKatana          bool
+	RunHakrawler       bool
+	RunGobuster        bool
 }
 
 // Run executes the URLShine reconnaissance pipeline.
-// It orchestrates a 5-stage process for comprehensive URL enumeration.
 func Run(opts Options) error {
 	start := time.Now()
 	logger.SetVerbose(opts.Verbose)
@@ -70,18 +70,7 @@ func Run(opts Options) error {
 	// 1. COLLECT
 	logger.Step(1, 5, "URL Collection")
 	if !opts.SkipCollect {
-		cfg := collector.Config{
-			Threads:         opts.Threads,
-			Depth:           opts.Depth,
-			Subs:            opts.Subs,
-			RunAll:          opts.RunAll,
-			RunGau:          opts.RunGau,
-			RunGospider:     opts.RunGospider,
-			RunKatana:       opts.RunKatana,
-			RunWaymore:      opts.RunWaymore,
-			RunWaybackurls:  opts.RunWaybackurls,
-			RunXnlinkfinder: opts.RunXnlinkfinder,
-		}
+		cfg := buildCollectorConfig(opts)
 		_, err := collector.RunAll(opts.Targets, rawDir, cfg)
 		if err != nil {
 			logger.Error("collection: %v", err)
@@ -160,4 +149,23 @@ func Run(opts Options) error {
 
 	reporter.Print(stats, dur)
 	return nil
+}
+
+func buildCollectorConfig(opts Options) collector.Config {
+	return collector.Config{
+		Threads:            opts.Threads,
+		Depth:              opts.Depth,
+		Subs:               opts.Subs,
+		RunAll:             opts.RunAll,
+		RunGau:             opts.RunGau,
+		RunWaymore:         opts.RunWaymore,
+		RunParamspider:     opts.RunParamspider,
+		RunCommoncrawl:     opts.RunCommoncrawl,
+		RunUrlfinder:       opts.RunUrlfinder,
+		RunGithubEndpoints: opts.RunGithubEndpoints,
+		RunXnlinkfinder:    opts.RunXnlinkfinder,
+		RunKatana:          opts.RunKatana,
+		RunHakrawler:       opts.RunHakrawler,
+		RunGobuster:        opts.RunGobuster,
+	}
 }

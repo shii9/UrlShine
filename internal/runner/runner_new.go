@@ -21,12 +21,23 @@ import (
 )
 
 var toolOutputNames = map[string]string{
-	"gau":          "gau.txt",
-	"gospider":     "gospider.txt",
-	"katana":       "katana.txt",
-	"waymore":      "waymore.txt",
-	"waybackurls":  "waybackurls.txt",
-	"xnLinkFinder": "xnlinkfinder.txt",
+	// Tier 1: Passive Archives
+	"gau":         "gau.txt",
+	"waymore":     "waymore.txt",
+	"paramspider": "paramspider.txt",
+
+	// Tier 2: Passive APIs & OSINT
+	"commoncrawl":      "commoncrawl.txt",
+	"urlfinder":        "urlfinder.txt",
+	"github-endpoints": "github-endpoints.txt",
+	"xnLinkFinder":     "xnlinkfinder.txt",
+
+	// Tier 3: Active Crawlers
+	"katana":    "katana.txt",
+	"hakrawler": "hakrawler.txt",
+
+	// Tier 4: Active Brute-Force
+	"gobuster": "gobuster.txt",
 }
 
 // RunProfessional executes collection and, when requested, the complete processing pipeline.
@@ -34,10 +45,7 @@ func RunProfessional(opts Options) error {
 	start := time.Now()
 	logger.SetVerbose(opts.Verbose)
 
-	// Display professional banner
 	banner.Print()
-
-	// Verify and check for missing tools
 	installer.CheckAndInstall()
 
 	if err := utils.EnsureDir(opts.OutputDir); err != nil {
@@ -57,16 +65,20 @@ func RunProfessional(opts Options) error {
 	}
 
 	cfg := collector.Config{
-		Threads:         opts.Threads,
-		Depth:           opts.Depth,
-		Subs:            opts.Subs,
-		RunAll:          opts.RunAll,
-		RunGau:          opts.RunGau,
-		RunGospider:     opts.RunGospider,
-		RunKatana:       opts.RunKatana,
-		RunWaymore:      opts.RunWaymore,
-		RunWaybackurls:  opts.RunWaybackurls,
-		RunXnlinkfinder: opts.RunXnlinkfinder,
+		Threads:            opts.Threads,
+		Depth:              opts.Depth,
+		Subs:               opts.Subs,
+		RunAll:             opts.RunAll,
+		RunGau:             opts.RunGau,
+		RunWaymore:         opts.RunWaymore,
+		RunParamspider:     opts.RunParamspider,
+		RunCommoncrawl:     opts.RunCommoncrawl,
+		RunUrlfinder:       opts.RunUrlfinder,
+		RunGithubEndpoints: opts.RunGithubEndpoints,
+		RunXnlinkfinder:    opts.RunXnlinkfinder,
+		RunKatana:          opts.RunKatana,
+		RunHakrawler:       opts.RunHakrawler,
+		RunGobuster:        opts.RunGobuster,
 	}
 
 	logger.Info("")
@@ -209,8 +221,9 @@ func printOutputSummary(opts Options, start time.Time, complete bool) {
 
 	logger.Info("")
 	logger.Info("Files generated per domain:")
-	logger.Info("  Per-tool results: gau.txt, katana.txt, gospider.txt, waymore.txt, waybackurls.txt")
-	logger.Info("                    xnlinkfinder.txt, gobuster.txt, dirb.txt")
+	logger.Info("  Per-tool results: gau.txt, waymore.txt, paramspider.txt")
+	logger.Info("                    commoncrawl.txt, urlfinder.txt, github-endpoints.txt")
+	logger.Info("                    xnlinkfinder.txt, katana.txt, hakrawler.txt, gobuster.txt")
 	if complete {
 		logger.Info("  Complete outputs: merged_urls.txt, normalized_urls.txt, api_urls.txt")
 		logger.Info("                    auth_admin_urls.txt, params_urls.txt, js_config_urls.txt")
@@ -262,13 +275,15 @@ func organizeToolResults(rawDir string, targetDirs map[string]string) (int, erro
 func mergeToolsForTarget(targetDir, outFile string) (int, error) {
 	tools := []string{
 		"gau.txt",
-		"katana.txt",
-		"gospider.txt",
 		"waymore.txt",
-		"waybackurls.txt",
+		"paramspider.txt",
+		"commoncrawl.txt",
+		"urlfinder.txt",
+		"github-endpoints.txt",
 		"xnlinkfinder.txt",
+		"katana.txt",
+		"hakrawler.txt",
 		"gobuster.txt",
-		"dirb.txt",
 	}
 	seen := make(map[string]struct{})
 	var merged []string

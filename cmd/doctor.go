@@ -12,14 +12,12 @@ var doctorCmd = &cobra.Command{
 	Use:   "doctor",
 	Short: "Dependency auditing and system health check",
 	Long: `URLShine Doctor performs a comprehensive system audit:
-  • Verifies all URL enumeration tools are installed
+  • Verifies all 10 core URL enumeration tools are installed
   • Checks Go version and system compatibility
-  • Categorizes tools by type (passive/active)
-  • Provides intelligent installation recommendations
-  • Suggests optimal tool combinations based on available tools`,
+  • Categorizes tools by type (passive archives, passive APIs, active crawlers, brute-force)
+  • Provides intelligent installation recommendations`,
 	Example: `  urlshine doctor
-  urlshine doctor --verbose
-  urlshine doctor --recommend`,
+  urlshine doctor --verbose`,
 	Run: func(cmd *cobra.Command, args []string) {
 		runDoctor()
 	},
@@ -37,32 +35,43 @@ func runDoctor() {
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	fmt.Println("📋 SYSTEM INFORMATION")
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Printf("  OS:        %s\n", runtime.GOOS)
-	fmt.Printf("  Arch:      %s\n", runtime.GOARCH)
+	fmt.Printf("  OS:         %s\n", runtime.GOOS)
+	fmt.Printf("  Arch:       %s\n", runtime.GOARCH)
 	fmt.Printf("  Go Version: %s\n", runtime.Version())
-	fmt.Printf("  URLShine:  v%s\n", version)
+	fmt.Printf("  URLShine:   v%s\n", version)
 	fmt.Println()
 
 	statuses := utils.CheckDependencies()
 
-	// Categorize tools
-	passiveTools := []string{"gau", "waymore", "waybackurls", "xnlinkfinder"}
-	activeTools := []string{"katana", "gospider", "gobuster", "dirb"}
+	// Categorize tools into 4 tiers + utility
+	passiveArchiveTools := []string{"gau", "waymore", "paramspider"}
+	passiveAPITools := []string{"commoncrawl", "urlfinder", "github-endpoints", "xnlinkfinder"}
+	activeCrawlerTools := []string{"katana", "hakrawler"}
+	activeBruteTools := []string{"gobuster"}
 	utilityTools := []string{"httpx"}
 
-	var installedPassive, installedActive, installedUtil int
-	var missingPassive, missingActive, missingUtil int
+	var installedArchives, installedAPIs, installedCrawlers, installedBrute, installedUtil int
 
 	for _, s := range statuses {
 		if s.Status == "installed" {
-			for _, p := range passiveTools {
+			for _, p := range passiveArchiveTools {
 				if s.Name == p {
-					installedPassive++
+					installedArchives++
 				}
 			}
-			for _, a := range activeTools {
+			for _, a := range passiveAPITools {
 				if s.Name == a {
-					installedActive++
+					installedAPIs++
+				}
+			}
+			for _, c := range activeCrawlerTools {
+				if s.Name == c {
+					installedCrawlers++
+				}
+			}
+			for _, b := range activeBruteTools {
+				if s.Name == b {
+					installedBrute++
 				}
 			}
 			for _, u := range utilityTools {
@@ -70,56 +79,78 @@ func runDoctor() {
 					installedUtil++
 				}
 			}
-		} else {
-			for _, p := range passiveTools {
-				if s.Name == p {
-					missingPassive++
-				}
-			}
-			for _, a := range activeTools {
-				if s.Name == a {
-					missingActive++
-				}
-			}
-			for _, u := range utilityTools {
-				if s.Name == u {
-					missingUtil++
-				}
-			}
 		}
 	}
 
 	totalTools := len(statuses)
-	installedCount := installedPassive + installedActive + installedUtil
+	installedCount := installedArchives + installedAPIs + installedCrawlers + installedBrute + installedUtil
 	missingCount := totalTools - installedCount
 
-	fmt.Printf("Total tools: %d | Installed: %d (passive: %d, active: %d, utility: %d) | Missing: %d\n\n",
-		totalTools, installedCount, installedPassive, installedActive, installedUtil, missingCount)
+	fmt.Printf("Total tools: %d | Installed: %d (Archives: %d, APIs: %d, Crawlers: %d, Brute-Force: %d, Utility: %d) | Missing: %d\n\n",
+		totalTools, installedCount, installedArchives, installedAPIs, installedCrawlers, installedBrute, installedUtil, missingCount)
 
-	// Display passive tools (archives)
+	// Display passive archive tools
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Println("🔍 PASSIVE TOOLS (Archive-based, no target traffic)")
+	fmt.Println("🔍 PASSIVE ARCHIVES (Archive-based, zero target traffic)")
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	for _, s := range statuses {
-		for _, p := range passiveTools {
+		for _, p := range passiveArchiveTools {
 			if s.Name == p {
 				if s.Status == "installed" {
-					fmt.Printf("  ✓ %s\n", s.Name)
+					fmt.Printf("  ✓ %-18s [Installed]\n", s.Name)
+				} else {
+					fmt.Printf("  ✗ %-18s [Missing]\n", s.Name)
 				}
 			}
 		}
 	}
 
-	// Display active tools (crawlers)
+	// Display passive API tools
 	fmt.Println()
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Println("🕷️  ACTIVE TOOLS (Crawlers, generates target traffic)")
+	fmt.Println("📡 PASSIVE APIS & OSINT (External APIs/Feeds, zero target traffic)")
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	for _, s := range statuses {
-		for _, a := range activeTools {
+		for _, a := range passiveAPITools {
 			if s.Name == a {
 				if s.Status == "installed" {
-					fmt.Printf("  ✓ %s\n", s.Name)
+					fmt.Printf("  ✓ %-18s [Installed]\n", s.Name)
+				} else {
+					fmt.Printf("  ✗ %-18s [Missing]\n", s.Name)
+				}
+			}
+		}
+	}
+
+	// Display active crawlers
+	fmt.Println()
+	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	fmt.Println("🕷️  ACTIVE CRAWLERS (Crawlers, generates target traffic)")
+	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	for _, s := range statuses {
+		for _, c := range activeCrawlerTools {
+			if s.Name == c {
+				if s.Status == "installed" {
+					fmt.Printf("  ✓ %-18s [Installed]\n", s.Name)
+				} else {
+					fmt.Printf("  ✗ %-18s [Missing]\n", s.Name)
+				}
+			}
+		}
+	}
+
+	// Display active brute force tools
+	fmt.Println()
+	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	fmt.Println("💥 ACTIVE BRUTE-FORCE (Directory/File enumeration)")
+	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	for _, s := range statuses {
+		for _, b := range activeBruteTools {
+			if s.Name == b {
+				if s.Status == "installed" {
+					fmt.Printf("  ✓ %-18s [Installed]\n", s.Name)
+				} else {
+					fmt.Printf("  ✗ %-18s [Missing]\n", s.Name)
 				}
 			}
 		}
@@ -134,31 +165,17 @@ func runDoctor() {
 		for _, u := range utilityTools {
 			if s.Name == u {
 				if s.Status == "installed" {
-					fmt.Printf("  ✓ %s (faster HTTP probing)\n", s.Name)
+					fmt.Printf("  ✓ %-18s (faster HTTP probing)\n", s.Name)
+				} else {
+					fmt.Printf("  ✗ %-18s [Missing]\n", s.Name)
 				}
 			}
 		}
 	}
 
-	// ✅ INSTALLED TOOLS section
 	fmt.Println()
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Println("✅ INSTALLED TOOLS")
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	installedFound := 0
-	for _, s := range statuses {
-		if s.Status == "installed" {
-			fmt.Printf("  ✓ %s\n", s.Name)
-			installedFound++
-		}
-	}
-	if installedFound == 0 {
-		fmt.Println("  (none installed)")
-	}
-
-	fmt.Println()
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Println("❌ MISSING TOOLS")
+	fmt.Println("❌ MISSING TOOLS INSTALLATION COMMANDS")
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	missingFound := 0
 	for _, s := range statuses {
@@ -169,7 +186,7 @@ func runDoctor() {
 		}
 	}
 	if missingFound == 0 {
-		fmt.Println("  (all tools installed!)")
+		fmt.Println("  (all 10 core tools installed!)")
 	}
 
 	fmt.Println()
@@ -177,7 +194,6 @@ func runDoctor() {
 	fmt.Println("💡 RECOMMENDATIONS")
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
-	// Provide recommendations based on installed tools
 	if installedCount == 0 {
 		fmt.Println("  ⚠️  No tools installed. Run the installer to get started:")
 		if runtime.GOOS == "windows" {
@@ -185,14 +201,11 @@ func runDoctor() {
 		} else {
 			fmt.Println("    bash install.sh")
 		}
-	} else if installedPassive > 0 && installedActive == 0 {
-		fmt.Printf("  ✓ You have %d passive tools. Recommended: add active crawlers (katana, gospider)\n", installedPassive)
-		fmt.Println("    Usage: urlshine -a -c target.com")
-	} else if installedPassive == 0 && installedActive > 0 {
-		fmt.Printf("  ✓ You have %d active tools. Recommended: add passive tools (gau, waymore)\n", installedActive)
+	} else if installedArchives+installedAPIs > 0 && installedCrawlers == 0 {
+		fmt.Printf("  ✓ You have %d passive tools. Recommended: add active crawlers (katana, hakrawler)\n", installedArchives+installedAPIs)
 		fmt.Println("    Usage: urlshine -a -c target.com")
 	} else if installedCount > 0 {
-		fmt.Printf("  ✓ Great setup! You have %d tools installed.\n", installedCount)
+		fmt.Printf("  ✓ Great setup! You have %d tools installed out of %d core tools.\n", installedCount, totalTools)
 		fmt.Println("    Usage: urlshine -a -c target.com")
 		if installedUtil == 0 {
 			fmt.Println("    Tip: Install httpx for faster live host verification")
@@ -201,31 +214,10 @@ func runDoctor() {
 
 	fmt.Println()
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Println("🚀 QUICK INSTALLATION")
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-
-	if runtime.GOOS == "windows" {
-		fmt.Println()
-		fmt.Println("  Windows: Run the installer batch file:")
-		fmt.Println("    install.bat")
-		fmt.Println()
-	} else {
-		fmt.Println()
-		fmt.Println("  Linux/macOS: Run the installer script:")
-		fmt.Println("    bash install.sh")
-		fmt.Println()
-	}
-
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-
 	if missingFound > 0 {
 		fmt.Printf("\n⚠️  You have %d missing tools. URLShine will skip unavailable tools gracefully.\n", missingFound)
-		fmt.Println("    For optimal results, install all tools using the installer scripts.\n")
+		fmt.Println("    For optimal results, install missing tools for maximum URL coverage.\n")
 	} else {
-		fmt.Println("\n✅ All tools are installed! You're ready for comprehensive URL enumeration.\n")
+		fmt.Println("\n✅ All 10 core tools are installed! You're ready for clean, maximum URL enumeration.\n")
 	}
-}
-
-func init() {
-	rootCmd.AddCommand(doctorCmd)
 }

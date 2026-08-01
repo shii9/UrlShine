@@ -11,6 +11,7 @@ import (
 )
 
 // runXnLinkFinder collects URLs via xnLinkFinder with aggressive parameters.
+// Parses target web pages and endpoints to extract relative links, APIs, and parameters.
 func runXnLinkFinder(target, outDir string, cfg Config) ([]string, error) {
 	targetUrl := ensureHTTPS(target)
 	targetDomain := target
@@ -19,10 +20,15 @@ func runXnLinkFinder(target, outDir string, cfg Config) ([]string, error) {
 	}
 	targetDomain = strings.Split(targetDomain, "/")[0]
 
+	depth := fmt.Sprintf("%d", cfg.Depth)
+
 	commands := [][]string{
-		{"xnLinkFinder", "-i", targetUrl, "-sp", targetUrl, "-sf", targetDomain, "-d", "5", "-o"},
-		{"xnLinkFinder", "-i", targetUrl, "-sp", targetUrl, "-sf", targetDomain, "-d", "5", "-all", "-o"},
-		{"xnLinkFinder", "-i", filepath.Join(outDir, fmt.Sprintf("waymore_%s.txt", utils.SanitizeFilename(target))), "-sp", targetUrl, "-sf", targetDomain, "-d", "3", "-o"},
+		// 1. Standard depth crawl with scope filter
+		{"xnLinkFinder", "-i", targetUrl, "-sp", targetUrl, "-sf", targetDomain, "-d", depth, "-o"},
+		// 2. Extract all endpoints including parameters and origin paths
+		{"xnLinkFinder", "-i", targetUrl, "-sp", targetUrl, "-sf", targetDomain, "-d", depth, "-all", "-o"},
+		// 3. Deep JS link discovery mode
+		{"xnLinkFinder", "-i", targetUrl, "-sp", targetUrl, "-sf", targetDomain, "-d", "5", "-v", "-o"},
 	}
 
 	var wg sync.WaitGroup
