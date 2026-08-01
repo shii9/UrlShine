@@ -13,26 +13,20 @@ var tools = map[string]string{
 	// Tier 1: Passive Archives
 	"gau":         "github.com/lc/gau/v2/cmd/gau@latest",
 	"waymore":     "waymore",
-	"waybackurls": "github.com/tomnomnom/waybackurls@latest",
-	"gauplus":     "github.com/bp0lr/gauplus@latest",
 	"paramspider": "git+https://github.com/devanshbatham/ParamSpider",
 
 	// Tier 2: Passive APIs & OSINT
-	"otxurls":          "github.com/lc/otxurls@latest",
 	"urlfinder":        "github.com/projectdiscovery/urlfinder/cmd/urlfinder@latest",
 	"github-endpoints": "github.com/gwen001/github-endpoints@latest",
 	"xnLinkFinder":     "xnlinkfinder",
+	"commoncrawl":      "commoncrawl", // Not a true binary but listed for symmetry if checked
 
 	// Tier 3: Active Crawlers
 	"katana":    "github.com/projectdiscovery/katana/cmd/katana@latest",
-	"gospider":  "github.com/jaeles-project/gospider@latest",
 	"hakrawler": "github.com/hakluke/hakrawler@latest",
 
 	// Tier 4: Active Brute-Force
 	"gobuster": "github.com/OJ/gobuster/v3@latest",
-
-	// Utility
-	"httpx": "github.com/projectdiscovery/httpx/cmd/httpx@latest",
 }
 
 // CheckAndInstall verifies if tools are installed and attempts installation if missing

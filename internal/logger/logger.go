@@ -26,6 +26,11 @@ var (
 	current = LevelInfo
 	mu      sync.Mutex
 	verbose = false
+
+	// Live animation state
+	activeJobs = make(map[string]bool)
+	animMu     sync.Mutex
+	animActive bool
 )
 
 // SetLevel configures the minimum log level threshold.
@@ -44,9 +49,6 @@ var (
 	pSkip  = color.New(color.Faint).Sprint("---")
 	pDebug = color.New(color.FgWhite, color.Faint).Sprint("DBG")
 
-	// Spinner frames for visual activity indicator
-	spinnerFrames = []string{"⠋", "⠙", "⠹", "⠴", "⠧", "⠽", "⠏"}
-
 	// Convenience color functions for message formatting.
 	cFaint  = color.New(color.Faint).SprintFunc()
 	cWhite  = color.New(color.FgWhite, color.Bold).SprintFunc()
@@ -55,17 +57,71 @@ var (
 	cYellow = color.New(color.FgYellow, color.Bold).SprintFunc()
 )
 
-// RunWithSpinner logs that a tool is running and returns a function to stop the indicator.
-// Since multiple tools run in parallel, we can't easily do a multi-line animated spinner
-// without a full TUI library. Instead, we'll use a a "running" sign that looks active.
+// StartLiveTracker starts a background goroutine that prints a live animation
+// tracking all currently active tools.
+func StartLiveTracker() {
+	animMu.Lock()
+	animActive = true
+	animMu.Unlock()
+
+	go func() {
+		frames := []string{"⠋", "⠙", "⠹", "⠴", "⠧", "⠽", "⠏", "⠐", "⠠", "⠤"}
+		i := 0
+		for {
+			animMu.Lock()
+			if !animActive {
+				animMu.Unlock()
+				break
+			}
+			
+			var tools []string
+			for t := range activeJobs {
+				tools = append(tools, t)
+			}
+			animMu.Unlock()
+
+			if len(tools) > 0 {
+				mu.Lock()
+				// \r\033[K clears the current line so we don't leave artifacts
+				fmt.Printf("\r\033[K  %s  %s  %s %s", ts(), color.New(color.FgMagenta, color.Bold).Sprint(frames[i%len(frames)]), color.New(color.FgCyan, color.Bold).Sprint("Running:"), color.New(color.FgWhite).Sprint(strings.Join(tools, ", ")))
+				mu.Unlock()
+			}
+			i++
+			time.Sleep(100 * time.Millisecond)
+		}
+		// Clear the spinner line when done
+		mu.Lock()
+		fmt.Printf("\r\033[K")
+		mu.Unlock()
+	}()
+}
+
+// StopLiveTracker safely terminates the background animation.
+func StopLiveTracker() {
+	animMu.Lock()
+	animActive = false
+	animMu.Unlock()
+	time.Sleep(150 * time.Millisecond) // Allow final clear to process
+}
+
+// AddJob registers a tool as currently running.
+func AddJob(tool string) {
+	animMu.Lock()
+	activeJobs[tool] = true
+	animMu.Unlock()
+}
+
+// RemoveJob deregisters a tool when it finishes.
+func RemoveJob(tool string) {
+	animMu.Lock()
+	delete(activeJobs, tool)
+	animMu.Unlock()
+}
+
+// RunWithSpinner is deprecated, but kept for signature compatibility. 
+// It now just adds the job to the tracker.
 func RunWithSpinner(tool, target string) {
-	mu.Lock()
-	defer mu.Unlock()
-	// We use a magenta "running" indicator.
-	// The "spinner" part is simulated by the user's expectation of progress
-	// unless we implement a full TUI. For now, we'll make the RUN prefix more dynamic.
-	fmt.Printf("  %s  %s  %-20s  %s %s\n",
-		ts(), pRun, cWhite(tool), cFaint(target), cCyan("↻ processing..."))
+	AddJob(tool)
 }
 
 // ts returns formatted current timestamp for log messages.
@@ -78,7 +134,8 @@ func print(prefix, format string, args ...interface{}) {
 	mu.Lock()
 	defer mu.Unlock()
 	msg := fmt.Sprintf(format, args...)
-	fmt.Printf("  %s  %s  %s\n", ts(), prefix, msg)
+	// Clear the spinner line before printing a new permanent log line
+	fmt.Printf("\r\033[K  %s  %s  %s\n", ts(), prefix, msg)
 }
 
 // Debug logs verbose debug-level information (only shown with -v flag).

@@ -107,6 +107,17 @@ go install github.com/OJ/gobuster/v3@latest
 go install github.com/projectdiscovery/httpx/cmd/httpx@latest
 ```
 
+### 3. Live Tracker Animation
+URLShine v3.2.0 includes a dynamic live activity tracker at the bottom of the CLI. It concurrently tracks and updates the list of currently executing engines in real-time, giving you visual feedback of what's running under the hood.
+
+### 4. Uninstallation
+To completely remove URLShine and all configurations from your system, you can use the built-in uninstaller:
+```bash
+# Run the uninstaller script
+bash uninstall.sh
+```
+This will remove the `urlshine` global binary and ask if you want to remove the 10 third-party sub-tools.
+
 ---
 
 ## 🚀 Quick Start & Workflows

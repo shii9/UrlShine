@@ -176,10 +176,15 @@ func RunAll(targets []string, rawDir string, cfg Config) ([]string, error) {
 		targetProgress[t] = 0
 	}
 
+	// Start the live animation tracker
+	logger.StartLiveTracker()
+
 	for j := range jobs {
 		wg.Add(1)
 		go func(j job) {
 			defer wg.Done()
+			defer logger.RemoveJob(j.tool.name)
+			
 			sem <- struct{}{}
 			defer func() { <-sem }()
 
@@ -237,6 +242,7 @@ func RunAll(targets []string, rawDir string, cfg Config) ([]string, error) {
 	}
 
 	wg.Wait()
+	logger.StopLiveTracker()
 	return outFiles, nil
 }
 

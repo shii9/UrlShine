@@ -8,7 +8,7 @@ import (
 	"github.com/fatih/color"
 )
 
-const Version = "2.0.1"
+const Version = "3.2.0"
 const Author = "URLShine Team"
 
 // Print displays the professional URLShine banner with system information.
